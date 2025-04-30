@@ -1,0 +1,9 @@
+2025-05-01 02:01:00,385 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-01 02:04:27,394 - WARNING - Negative sentiment detected. Fetching a new quote...
+2025-05-01 02:08:10,580 - WARNING - Negative sentiment detected. Fetching a new quote...
+2025-05-01 02:35:08,241 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-01 02:37:47,390 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-01 02:45:39,926 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-01 02:47:30,783 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-01 02:55:50,628 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-01 02:58:05,925 - INFO - file_cache is only supported with oauth2client<4.0.0
