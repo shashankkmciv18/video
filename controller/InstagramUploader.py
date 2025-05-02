@@ -1,9 +1,6 @@
 import json
-import os
-
 from fastapi import APIRouter, Request
-
-from db import get_db, get_db_1
+from db import  getDB
 from repository.InstagramUploadRepository import InstagramRepository
 from service.uploader.InstagramUploaderService import InstagramUploaderService
 
@@ -17,7 +14,7 @@ async def upload_video_controller(req: Request):
         video_url = body.get("video_url")
         caption = body.get("caption")
 
-        db_cursor, db_connection = get_db_1()
+        db_cursor, db_connection = getDB()
         repo = InstagramRepository(db_cursor, db_connection)
 
         service = InstagramUploaderService(repo)
@@ -28,14 +25,12 @@ async def upload_video_controller(req: Request):
         return {"error": str(e)}
 
 
-
-
 @router.post("/instagram/publish")
 async def publish_video_controller(req: Request):
     try:
         body = await req.json()
         creation_id = body.get("creation_id")
-        db_cursor, db_connection = get_db_1()
+        db_cursor, db_connection = getDB()
         repo = InstagramRepository(db_cursor, db_connection)
         service = InstagramUploaderService(repo)
         response = service.publish_video(creation_id)

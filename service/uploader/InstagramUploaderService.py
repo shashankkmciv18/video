@@ -1,20 +1,16 @@
 import os
-from sqlite3 import Connection
 
 import requests
 from dotenv import load_dotenv
-from fastapi import Depends
 
-from db import get_db, get_db_1
 from repository.InstagramUploadRepository import InstagramRepository
-
 load_dotenv()
-
 
 
 class InstagramUploaderService:
     def __init__(self, repo: InstagramRepository):
         self.repo = repo
+
 
     def upload_to_instagram(self,video_url: str, caption: str, access_token: str) -> dict:
         """
