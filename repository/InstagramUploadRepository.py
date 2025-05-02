@@ -1,7 +1,3 @@
-# repositories/instagram.py
-from sqlite3 import Connection
-
-
 class InstagramRepository:
     def __init__(self, db_cursor, db_connection):
         self.cursor = db_cursor

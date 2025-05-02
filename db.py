@@ -1,6 +1,4 @@
 import sqlite3
-import os
-from contextlib import contextmanager
 
 _db_connection = None
 _db_cursor = None
