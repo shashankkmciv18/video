@@ -12,9 +12,9 @@ import os
 router = APIRouter()
 
 
-APP_ID = "667518406069361"
-APP_SECRET = "a87f1249a30a050120f19844d9c269ee"
-REDIRECT_URI = "http://localhost:8000/api/v1/auth/callback"
+APP_ID = "1390764348744729"
+APP_SECRET = "3b2b30021500ac520c5d30d0f5ca1954"
+REDIRECT_URI = "https://8346-2405-201-600d-500f-49fc-bac2-8cd4-34e6.ngrok-free.app/api/v1/auth/callback"
 
 
 @router.post("/video/generate-and-upload")
@@ -56,6 +56,7 @@ def auth_callback(request: Request):
         return {"error": "Failed to fetch access token", "details": token_res.text}
 
     access_token = token_res.json().get("access_token")
+    print(access_token)
     return {
         "message": "Short-lived access token retrieved successfully",
         "access_token": access_token,
