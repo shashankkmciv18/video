@@ -16,6 +16,7 @@ def upload_to_youtube(title: str, description: str, filePath: str) -> str:
     try:
         # Authorize YouTube API
         secrets = os.path.abspath(os.path.join(os.path.dirname(__file__), '../secrets/client_secrets.json'))
+        print(f"Using client secrets file: {secrets}")
         flow = InstalledAppFlow.from_client_secrets_file(secrets, SCOPES)
         credentials = flow.run_local_server(port=0)
         youtube = build("youtube", "v3", credentials=credentials)
@@ -39,7 +40,6 @@ def upload_to_youtube(title: str, description: str, filePath: str) -> str:
         print('file found, uploading...')
 
 
-
 def fetchFile():
     # Fetch the file from S3 or any other source
     # For demonstration, we will use a local file
@@ -47,11 +47,19 @@ def fetchFile():
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Video file not found: {file_path}")
     return file_path
-def upload_to_youtube_v2(req) -> str:
-    title = req.title
-    description = req.description
-    tags = req.tags
 
+
+def default_youtube_upload():
+    title = os.getenv("VIDEO_TITLE", "Daily Shorts")
+    description = os.getenv("VIDEO_DESCRIPTION", "Follow for more such videos")
+    tags = os.getenv("VIDEO_TAGS", "motivations,daily motivation,shorts").split(",")  # Split by comma to create a list
+    video_id = upload_to_youtube(
+        title=title,
+        description=description,
+        filePath=fetchFile()
+    )
+    return video_id
+def upload_to_youtube_v2(title: str, description: str, tags: list[str]) -> str:
     file_path = fetchFile()
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Video file not found: {file_path}")

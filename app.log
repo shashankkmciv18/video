@@ -9,3 +9,6 @@
 2025-05-01 02:58:05,925 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-01 15:47:32,640 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-01 15:50:09,439 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 01:18:28,122 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 02:36:10,015 - ERROR - Connection to Redis lost: Retry (0/20) now.
+2025-05-04 02:37:25,028 - ERROR - Connection to Redis lost: Retry (1/20) in 1.00 second.
