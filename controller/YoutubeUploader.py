@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from dto.VideoUploadDTO import VideoUploadRequest
 from service.content_generator.VideoGenerator import generate_videos_for_platforms
-from service.uploader.YoutubeUploadService import upload_to_youtube_v2
+from service.uploader.YoutubeUploadService import upload_to_youtube_v2, generate_token
 import os
 router = APIRouter()
 
@@ -23,3 +23,8 @@ async def upload_video(
         return JSONResponse(content={"videoId": video_id, "status": "Uploaded"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/token")
+async def generate_token_controller():
+    generate_token()

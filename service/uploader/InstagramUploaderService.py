@@ -33,6 +33,7 @@ class InstagramUploaderService:
 
             # Create a new entry
             repo.create_creation_entry(instagram_creation_id, is_published)
+            print(response)
             return response
         except Exception as e:
             return {"error": str(e)}

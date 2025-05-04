@@ -12,3 +12,4 @@
 2025-05-04 01:18:28,122 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-04 02:36:10,015 - ERROR - Connection to Redis lost: Retry (0/20) now.
 2025-05-04 02:37:25,028 - ERROR - Connection to Redis lost: Retry (1/20) in 1.00 second.
+2025-05-04 12:47:03,451 - INFO - "GET /?state=p4dOlRMZmWJSTxP3RaY4TQZJ7tf565&code=4/0Ab_5qlmTkULzIgvNkcQk0dwE6zAyTYLrgKF-EF4pspZvLrrdRUs2cPkINvng-KhxNDSSIg&scope=https://www.googleapis.com/auth/youtube.upload HTTP/1.1" 200 65

@@ -5,6 +5,7 @@ from celery.exceptions import MaxRetriesExceededError
 
 from db import getDB
 from eventHandler.videoEvents.events import VideoGeneratedEvent, InstagramPostPublishedEvent
+from repository.InstagramUploadRepository import InstagramRepository
 
 from service.uploader.InstagramUploaderService import InstagramUploaderService
 
@@ -15,39 +16,48 @@ celery_app = Celery(
 )
 
 
-instagram_upload_service = InstagramUploaderService(getDB())
+db_cursor, db_connection = getDB()
+repo = InstagramRepository(db_cursor, db_connection)
+instagram_upload_service = InstagramUploaderService(repo)
 
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
 def instagramUploadEvent(self, event_data: dict):
-    print(f"[Instagram] Uploading video for {event_data['url']}")
+
     event = VideoGeneratedEvent(**event_data)
-    url = event.url
+    print(f"[Instagram] Uploading video  {event.url}")
     try:
         # Simulating Instagram upload
         response = instagram_upload_service.upload_video(event.url, os.getenv("REEL_CAPTION"))
+        print(f"response : {response}")
+        next_event = InstagramPostPublishedEvent(instagram_creation_id=response["id"])
+        print(next_event.dict())
+
+        instagramPublishEvent.apply_async(args=[next_event.dict()], countdown=30)
+        print(f"[Instagram] Video upload process started successfully for {response['id']}")
     except Exception as e:
         print(f"Error occurred: {e}")
         try:
             self.retry(countdown=60)  # Retry after 60 seconds
         except MaxRetriesExceededError:
             print("Max retries reached for Instagram upload.")
-    next_event = InstagramPostPublishedEvent(instagram_creation_id=event.response.id)
-    instagramPublishEvent.apply_async(args=[next_event.dict()], countdown=30)
-    print(f"[Instagram] Video upload process started successfully for {event.url}")
+
+
 
 
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
 def instagramPublishEvent(self, event_data: dict):
-    print(f"[Follow-up] Instagram post for video {event_data['instagram_creation_id']} is now live")
     event = InstagramPostPublishedEvent(**event_data)
+    print(f"[Follow-up] Instagram post for video {event.instagram_creation_id} is now live")
     try:
-        response = instagram_upload_service.publish_video(event.instagram_content_id)
+        creation_id = event.instagram_creation_id
+        print('creation_id : ', creation_id)
+        response = instagram_upload_service.publish_video(creation_id)
+        print(f"[Follow-up] Instagram post for video {event.instagram_creation_id} is now live at {response['id']}")
     except Exception as e:
         print(f"Error occurred: {e}")
         try:
             self.retry(countdown=60)  # Retry after 60 seconds
         except MaxRetriesExceededError:
             print("Max retries reached for Instagram upload.")
-    print(f"[Follow-up] Instagram post for video {event.instagram_creation_id} is now live at {response.id}")
