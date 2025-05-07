@@ -3,6 +3,7 @@ import os.path
 from fastapi import APIRouter, Form, HTTPException
 from fastapi.responses import JSONResponse
 
+
 from eventHandler.videoEvents.InstagramTasks import instagramUploadEvent
 from eventHandler.videoEvents.YoutubeTasks import youtubeEvent, test_task
 from eventHandler.videoEvents.events import VideoGeneratedEvent
@@ -14,9 +15,7 @@ router = APIRouter()
 
 
 @router.get("/generate")
-async def generate(
-
-):
+async def generate():
     try:
         file_path = generate_videos_for_platforms()
         s3_uploader_service = S3UploaderService()

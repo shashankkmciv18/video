@@ -54,7 +54,7 @@ def instagramPublishEvent(self, event_data: dict):
         creation_id = event.instagram_creation_id
         print('creation_id : ', creation_id)
         response = instagram_upload_service.publish_video(creation_id)
-        print(f"[Follow-up] Instagram post for video {event.instagram_creation_id} is now live at {response['id']}")
+        print(f"[Follow-up] Instagram post for video {event.instagram_creation_id}")
     except Exception as e:
         print(f"Error occurred: {e}")
         try:
