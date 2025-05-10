@@ -6,6 +6,7 @@ from controller.InstagramUploader import router as instagram_router
 from controller.CallbackController import  router as callback_router
 from controller.LLMController import  router as llmRouter
 from controller.TTSController import  router as ttsRouter
+from controller.ScriptController import  router as scriptRouter
 
 app = FastAPI()
 app.include_router(uploader_router, prefix="/api/v1", tags=["YouTube Upload"])
@@ -15,3 +16,4 @@ app.include_router(instagram_router, prefix="/api/v1", tags=["Instagram Upload"]
 app.include_router(callback_router, prefix="/api/v1", tags=["Callback"])
 app.include_router(llmRouter, prefix="/api/v1/lang", tags=["LLM"])
 app.include_router(ttsRouter, prefix="/api/v1/audio", tags=["TTS"])
+app.include_router(scriptRouter, prefix="/api/v1/script", tags=["Script"])

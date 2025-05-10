@@ -1,16 +1,18 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException
 
 from fastapi import APIRouter, Request, Depends
+
+from dependencies.ScriptDependency import get_script_service
+from service.script.ScriptService import ScriptService
 
 router = APIRouter()
 load_dotenv()
 
 
 @router.post("/store/script")
-async def store_script(req: Request):
+async def store_script(req: Request, scriptService: ScriptService = Depends(get_script_service)):
     data = await req.json()
     script = data.get("script")
-    video_id = data.get("video_id")
-    # Save the script to the database or file system
-    # For now, we'll just return it
-    return {"script": script, "video_id": video_id}
+    script_id = scriptService.save_script(script)
+    return {"status": "success","script_id": script_id}
