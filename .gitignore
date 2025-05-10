@@ -97,4 +97,3 @@ celerybeat-schedule
 *.bak
 *.orig
 *.DS_Store
-.venv/
