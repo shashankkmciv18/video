@@ -7,7 +7,6 @@ from eventHandler.YoutubeEvent import youtubeEvent
 
 from service.content_generator.VideoGenerator import generate_videos_for_platforms
 from service.uploader.S3UploaderService import S3UploaderService
-
 router = APIRouter()
 
 

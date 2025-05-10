@@ -97,3 +97,6 @@ celerybeat-schedule
 *.bak
 *.orig
 *.DS_Store
+
+__pycache__/main.cpython-313.pyc
+.vevn/
