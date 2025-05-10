@@ -2,26 +2,25 @@ import json
 import os
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, Request
-from db import  getDB
-from repository.InstagramUploadRepository import InstagramRepository
+from fastapi import APIRouter, Request, Depends
+
+from dependencies.InstagramDependency import get_instagram_service
 from service.uploader.InstagramUploaderService import InstagramUploaderService
 
 router = APIRouter()
 load_dotenv()
 
 
+
 @router.post("/instagram/upload")
-async def upload_video_controller(req: Request):
+async def upload_video_controller(
+    req: Request,
+    service: InstagramUploaderService = Depends(get_instagram_service),
+):
     try:
         body = json.loads((await req.body()).decode("utf-8"))
         video_url = body.get("video_url")
         caption = body.get("caption")
-
-        db_cursor, db_connection = getDB()
-        repo = InstagramRepository(db_cursor, db_connection)
-
-        service = InstagramUploaderService(repo)
         response = service.upload_video(video_url, caption)
         return response
 
@@ -30,13 +29,12 @@ async def upload_video_controller(req: Request):
 
 
 @router.post("/instagram/publish")
-async def publish_video_controller(req: Request):
+async def publish_video_controller(
+        req: Request,
+        service: InstagramUploaderService = Depends(get_instagram_service)):
     try:
         body = await req.json()
         creation_id = body.get("creation_id")
-        db_cursor, db_connection = getDB()
-        repo = InstagramRepository(db_cursor, db_connection)
-        service = InstagramUploaderService(repo)
         response = service.publish_video(creation_id)
         return response
     except Exception as e:
@@ -44,12 +42,9 @@ async def publish_video_controller(req: Request):
 
 
 @router.get("/generate/post/publish")
-async def generateAndPostVideo():
+async def generateAndPostVideo(service : InstagramUploaderService = Depends(get_instagram_service)):
     try:
         caption = os.getenv("REEL_CAPTION")
-        db_cursor, db_connection = getDB()
-        repo = InstagramRepository(db_cursor, db_connection)
-        service = InstagramUploaderService(repo)
         response = service.generateAndPostVideo(caption)
         return {
             "status": "success",

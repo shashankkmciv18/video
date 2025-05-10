@@ -12,7 +12,6 @@ from service.uploader.S3UploaderService import S3UploaderService
 load_dotenv()
 
 
-
 class InstagramUploaderService:
 
     def __init__(self, repo: InstagramRepository):
@@ -47,7 +46,7 @@ class InstagramUploaderService:
             is_published = True
             instagram_creation_id = creation_id
             repo.update_creation_entry(instagram_creation_id, is_published, instagram_content_id)
-            return  response
+            return response
         except Exception as e:
             return {"error": str(e)}
 

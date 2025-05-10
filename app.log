@@ -13,3 +13,20 @@
 2025-05-04 02:36:10,015 - ERROR - Connection to Redis lost: Retry (0/20) now.
 2025-05-04 02:37:25,028 - ERROR - Connection to Redis lost: Retry (1/20) in 1.00 second.
 2025-05-04 12:47:03,451 - INFO - "GET /?state=p4dOlRMZmWJSTxP3RaY4TQZJ7tf565&code=4/0Ab_5qlmTkULzIgvNkcQk0dwE6zAyTYLrgKF-EF4pspZvLrrdRUs2cPkINvng-KhxNDSSIg&scope=https://www.googleapis.com/auth/youtube.upload HTTP/1.1" 200 65
+2025-05-10 19:40:41,886 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 19:53:23,988 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 20:05:09,453 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 20:11:16,204 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 20:13:50,068 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 20:27:22,509 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 20:33:04,920 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 20:43:16,602 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 20:49:07,209 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 20:55:05,122 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 21:00:26,865 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 21:01:34,620 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 21:02:15,611 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 21:05:33,324 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 21:18:49,369 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 21:20:19,130 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-10 21:24:07,274 - WARNING - No hostname was supplied. Reverting to default 'localhost'

@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Form, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
 from dto.VideoUploadDTO import VideoUploadRequest
-from service.content_generator.VideoGenerator import generate_videos_for_platforms
 from service.uploader.YoutubeUploadService import upload_to_youtube_v2, generate_token
-import os
+
 router = APIRouter()
 
 @router.post("/youtube")

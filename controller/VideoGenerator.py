@@ -1,12 +1,9 @@
-import os.path
-
-from fastapi import APIRouter, Form, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
 
-from eventHandler.videoEvents.InstagramTasks import instagramUploadEvent
-from eventHandler.videoEvents.YoutubeTasks import youtubeEvent, test_task
-from eventHandler.videoEvents.events import VideoGeneratedEvent
+from eventHandler.InstagramEvent import instagramUploadEvent
+from eventHandler.YoutubeEvent import youtubeEvent
 
 from service.content_generator.VideoGenerator import generate_videos_for_platforms
 from service.uploader.S3UploaderService import S3UploaderService

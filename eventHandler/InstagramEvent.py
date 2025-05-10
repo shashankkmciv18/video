@@ -1,24 +1,13 @@
 import os
 
-from celery import Celery
+
 from celery.exceptions import MaxRetriesExceededError
 
-from db import getDB
-from eventHandler.videoEvents.events import VideoGeneratedEvent, InstagramPostPublishedEvent
-from repository.InstagramUploadRepository import InstagramRepository
+from eventHandler.celery_app import celery_app
+from dependencies.InstagramDependency import get_instagram_service
+from eventHandler.events import VideoGeneratedEvent, InstagramPostPublishedEvent
 
-from service.uploader.InstagramUploaderService import InstagramUploaderService
-
-celery_app = Celery(
-    "tasks",
-    broker="redis://localhost:6379/0",  # Or use the appropriate Redis URL if using Docker
-    backend="redis://localhost:6379/0"
-)
-
-
-db_cursor, db_connection = getDB()
-repo = InstagramRepository(db_cursor, db_connection)
-instagram_upload_service = InstagramUploaderService(repo)
+instagram_upload_service = get_instagram_service()
 
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=60)

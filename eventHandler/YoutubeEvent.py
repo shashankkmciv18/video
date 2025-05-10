@@ -1,19 +1,13 @@
 import time
 
-from celery import Celery
 from celery.exceptions import MaxRetriesExceededError
 
-from eventHandler.videoEvents.events import VideoGeneratedEvent
+from eventHandler.celery_app import celery_app
+from eventHandler.events import VideoGeneratedEvent
 from service.uploader.YoutubeUploadService import default_youtube_upload
 
-celery_app = Celery(
-    "tasks",
-    broker="redis://localhost:6379/0",  # Or use the appropriate Redis URL if using Docker
-    backend="redis://localhost:6379/0"
-)
 
-
-@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)  # Retry up to 3 times with a 60s delay
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
 def youtubeEvent(self, event_data: dict):
     print(f"[YouTube] Uploading video for {event_data['path']}")
     event = VideoGeneratedEvent(**event_data)
@@ -31,7 +25,7 @@ def youtubeEvent(self, event_data: dict):
     print(f"[YouTube] Video upload process started successfully for {event.path}")
 
 
-@celery_app.task
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
 def test_task(event_data: dict):
     event = VideoGeneratedEvent(**event_data)
     print("Starting Test Event Task")
