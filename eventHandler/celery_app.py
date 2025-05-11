@@ -19,6 +19,7 @@ celery_app.conf.update(
 
 celery_app.conf.task_queues = (
     Queue('youtube', Exchange('youtube', type='direct'), routing_key='youtube'),
+    Queue('audio_queue', Exchange('audio_queue', type='direct'), routing_key='audio_queue'),
 )
 # Autodiscover tasks in the flat eventHandler module
 celery_app.autodiscover_tasks([
@@ -26,6 +27,7 @@ celery_app.autodiscover_tasks([
     # "eventHandler.InstagramEvent",
     "eventHandler.TTSEvent",
     "eventHandler.AdditionEvent",
+    "eventHandler.AudioEvents",
 ])
 
 # Define routing for specific tasks
@@ -36,4 +38,6 @@ celery_app.conf.task_routes = {
     'eventHandler.TTSEventNew.ttsEvent': {'queue': 'youtube'},
     'eventHandler.AdditionEvent.addEvent': {'queue': 'youtube'},
     'eventHandler.TTSEvent.tts_audio_generation_event': {'queue': 'youtube'},
+    'eventHandler.AudioEvents.audio_merge_task': {'queue': 'audio_queue'},
+
 }

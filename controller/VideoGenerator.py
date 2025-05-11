@@ -15,7 +15,8 @@ async def generate():
     try:
         file_path = generate_videos_for_platforms()
         s3_uploader_service = S3UploaderService()
-        upload_url = s3_uploader_service.upload_file_to_s3(file_path=file_path)
+        s3_file_key = f"videos/{file_path}"
+        upload_url = s3_uploader_service.upload_file_to_s3(file_path=file_path,s3_file_key = s3_file_key )
         # This is used to mock the video generation
         # file_path = os.path.join(os.path.dirname(__file__), "../resources/video/short_video.mp4")
         # upload_url = 'https://videogenerator001.s3.us-east-1.amazonaws.com/videos/short_video.mp4'

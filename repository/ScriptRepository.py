@@ -1,4 +1,6 @@
 # script_repository.py
+from typing import Union, List
+
 
 class ScriptRepository:
     def __init__(self, cursor, conn):
@@ -54,10 +56,23 @@ class ScriptRepository:
         )
         self.commit()
 
-    def get_highest_batch_id(self):
-        self.cursor.execute("SELECT MAX(batch_id) FROM dialogue_tts_mapping")
-        result = self.cursor.fetchone()
-        return result[0] if result else None
+    def fetch_tts_op(self, batch_ids: list[str]):
+        query = """
+        SELECT
+            dtm.status,
+            d.seq_id,
+            tj.result_url AS voice_url,
+            d.pause AS pause_seconds
+        FROM dialogue_tts_mapping dtm
+        JOIN tts_jobs tj ON dtm.job_id = tj.job_id
+        JOIN dialogues d ON dtm.dialogue_id = d.id
+        WHERE dtm.batch_id IN ({seq})
+        ORDER BY d.seq_id
+        """.format(seq=','.join('?' for _ in batch_ids))
+
+        return self.conn.execute(query, batch_ids).fetchall()
+
+
 
     def commit(self):
         self.conn.commit()

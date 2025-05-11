@@ -63,6 +63,10 @@ class FakeYouProcessor(BaseTTSProcessor):
         except Exception as e:
             raise Exception(f"Error getting status from FakeYou: {e}")
 
+
+    def get_cdn_url(self):
+        return os.getenv("FAKEYOU_CDN_URL", "https://cdn.fakeyou.com")
+
     @staticmethod
     def transform_tts_response(response):
         if not response.get("success", False):

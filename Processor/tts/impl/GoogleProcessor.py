@@ -1,4 +1,6 @@
 # file: service/tts/processors/GoogleTTSProcessor.py
+import os
+
 from Processor.tts.BaseTTSProcessor import BaseTTSProcessor
 
 
@@ -12,3 +14,6 @@ class GoogleTTSProcessor(BaseTTSProcessor):
 
     def get_status(self, job_id: str):
         raise NotImplementedError("Google TTS does not support status checking.")
+
+    def get_cdn_url(self):
+        return os.getenv("GOOGLE_CDN_URL", "https://default-google-cdn-url.com")

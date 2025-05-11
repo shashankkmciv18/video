@@ -15,3 +15,6 @@ class BaseTTSProcessor(ABC):
     
     def get_name(self):
         pass
+
+    def get_cdn_url(self):
+        pass
