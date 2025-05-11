@@ -2,7 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException
 
 from fastapi import APIRouter, Request, Depends
 
+from dependencies.ScriptDependency import get_script_service
 from dependencies.TTSDependency import get_tts_service
+from service.script.ScriptService import ScriptService
 from service.tts.TtsService import TtsService
 
 router = APIRouter()
@@ -33,3 +35,11 @@ async def get_status(req: Request, tts_service: TtsService = Depends(get_tts_ser
 
     return {"status": status}
 
+
+@router.post("/generate/script/audio")
+async def generate_script_audio(req: Request, tts_service: TtsService = Depends(get_tts_service)):
+
+    data = await req.json()
+    script_id = data.get("script_id")
+    tts_service.generate_script_audio(script_id)
+    return {"message": "Audio generation started for the script."}

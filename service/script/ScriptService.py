@@ -30,3 +30,20 @@ class ScriptService:
 
         self.repo.commit()
         return script_id
+
+    def get_dialogues(self, script_id):
+        return self.repo.get_dialogues_by_script_id(script_id)
+
+    def update_dialogue_mapping(self, dialogue_id, job_id, status):
+        self.repo.update_dialogue_job(
+            dialogue_id=dialogue_id,
+            job_id=job_id,
+            status=status
+        )
+
+    def create_dialogue_mapping(self, dialogue_id, job_id, status, batch_id: str):
+        self.repo.create_dialogue_mapping(dialogue_id, job_id, status, batch_id)
+
+    def get_highest_batch_id(self):
+        return self.repo.get_highest_batch_id()
+

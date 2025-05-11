@@ -26,7 +26,6 @@ celery_app.autodiscover_tasks([
     # "eventHandler.InstagramEvent",
     "eventHandler.TTSEvent",
     "eventHandler.AdditionEvent",
-    "eventHandler.TTSEventNew",
 ])
 
 # Define routing for specific tasks
@@ -36,4 +35,5 @@ celery_app.conf.task_routes = {
     'eventHandler.TTSEvent.ttsEvent': {'queue': 'youtube'},
     'eventHandler.TTSEventNew.ttsEvent': {'queue': 'youtube'},
     'eventHandler.AdditionEvent.addEvent': {'queue': 'youtube'},
+    'eventHandler.TTSEvent.tts_audio_generation_event': {'queue': 'youtube'},
 }

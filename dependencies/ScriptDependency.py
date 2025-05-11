@@ -11,6 +11,5 @@ def get_script_repo() -> ScriptRepository:
 
 def get_script_service(
         repo: ScriptRepository = Depends(get_script_repo),
-
 ) -> ScriptService:
     return ScriptService(repo)

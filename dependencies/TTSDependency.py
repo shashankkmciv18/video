@@ -1,7 +1,9 @@
 from fastapi import Depends
 
 from db import getDB
+from dependencies.ScriptDependency import get_script_service
 from repository.TtsRepository import TtsRepository
+from service.script.ScriptService import ScriptService
 from service.tts.TtsService import TtsService
 
 
