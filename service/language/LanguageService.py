@@ -1,12 +1,15 @@
 import subprocess
 import uuid
 
-from dto.ChatModel import Message, ChatResponse, Choice
+from dependencies.PromptRepoDependency import get_prompt_repo
+from dto.OllamaModel import Message, ChatResponse, Choice
+from eventHandler.LlmEvents import llmChatEvent
 
 
 class LanguageService:
     def __init__(self):
         self.language = 'en'
+        self.repo = get_prompt_repo()
 
     def set_language(self, language):
         self.language = language
@@ -32,36 +35,30 @@ class LanguageService:
         return prompt.strip()
 
     def chat(self, messages: list[Message], model: str) -> dict:
-        prompt = self.build_prompt(messages)
+        prompt_id = str(uuid.uuid4())
+        self.repo.add_prompt(
+            prompt_id=prompt_id,
+            system_prompt=messages[0].content,
+            user_prompt=messages[1].content
+        )
+
 
         try:
-            result = subprocess.run(
-                ["ollama", "run", model],
-                input=prompt,
-                capture_output=True,
-                text=True,
-                check=True
-            )
+            llmChatEvent.apply_async(args=[{
+                "system_prompt": messages[0].content,
+                "user_prompt": messages[1].content,
+                "assistant_prompt": messages[2].content,
+                "model": model,
+                "prompt_id": prompt_id
+            }])
+        except Exception as e:
+            print(f"Error occurred during LLM chat: {e}")
 
-            output = result.stdout.strip()
+        return {
+            "id": prompt_id,
+            "object": "chat.completion",
+            "status": "pending",
+        }
 
-            response = ChatResponse(
-                id=f"chatcmpl-{uuid.uuid4()}",
-                choices=[
-                    Choice(
-                        index=0,
-                        message=Message(role="assistant", content=output),
-                        finish_reason="stop"
-                    )
-                ],
-                usage=None
-            )
-            print(response)
-            return response.dict()
-
-        except subprocess.CalledProcessError as e:
-            return {
-                "error": f"Ollama execution failed: {e.stderr or str(e)}"
-            }
 
 

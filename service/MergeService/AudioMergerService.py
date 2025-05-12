@@ -2,7 +2,7 @@ import os
 
 from dependencies.ScriptDependency import get_script_repo, get_script_service
 from dependencies.TTSDependency import get_tts_service, get_tts_repo
-from eventHandler.AudioEvents import download_and_merge_audio, helper
+from eventHandler.AudioEvents import download_and_merge_audio
 
 
 class AudioMergerService:

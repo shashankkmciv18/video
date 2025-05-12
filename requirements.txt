@@ -176,3 +176,5 @@ wsproto==1.2.0
 yarg==0.1.10
 zipp==3.21.0
 zstandard==0.23.0
+
+ollama~=0.4.8
