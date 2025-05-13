@@ -1,6 +1,8 @@
 import subprocess
 import uuid
 
+import ollama
+
 from dependencies.PromptRepoDependency import get_prompt_repo
 from dto.OllamaModel import Message, ChatResponse, Choice
 from eventHandler.LlmEvents import llmChatEvent
@@ -44,13 +46,14 @@ class LanguageService:
 
 
         try:
-            llmChatEvent.apply_async(args=[{
+            payload = {
                 "system_prompt": messages[0].content,
                 "user_prompt": messages[1].content,
-                "assistant_prompt": messages[2].content,
-                "model": model,
+                "model" : model,
                 "prompt_id": prompt_id
-            }])
+            }
+            print(payload)
+            llmChatEvent.apply_async(args=[payload], countdown=0)
         except Exception as e:
             print(f"Error occurred during LLM chat: {e}")
 

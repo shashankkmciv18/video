@@ -9,7 +9,6 @@ from eventHandler.celery_app import celery_app
 def llmChatEvent(self, event_data: dict):
     system_prompt = event_data.get("system_prompt")
     user_prompt = event_data.get("user_prompt")
-    assistant_prompt = event_data.get("assistant_prompt")
     model = event_data.get("model")
     prompt_id = event_data["prompt_id"]
     print(f"[LLM]  ::Fetching status for {event_data}")
@@ -17,8 +16,7 @@ def llmChatEvent(self, event_data: dict):
     try:
         response = ollama.chat(model=model, messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-            {"role": "assistant", "content": assistant_prompt},
+            {"role": "user", "content": user_prompt}
         ])
         response["choices"][0]["message"]["content"] = response["choices"][0]["message"]["content"].strip()
         print(f"[LLM]  Chat response: {response}")
