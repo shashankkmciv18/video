@@ -94,8 +94,8 @@ def helper(event_data: dict):
 
         with open(concat_file, 'w') as f:
             for audio_file in audio_files:
-                f.write(f"file '{audio_file.replace("'", "'\\''")}'\n")
-
+                escaped_audio_file = audio_file.replace("'", "'\\''")
+                f.write(f"file '{escaped_audio_file}'\n")
 
         # Use FFmpeg to merge all audio files in the list
         ffmpeg_cmd = f"ffmpeg -f concat -safe 0 -i {concat_file} -c copy {output_path}"

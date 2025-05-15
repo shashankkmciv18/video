@@ -1,13 +1,21 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
+
 
 class Message(BaseModel):
     role: str  # system | user | assistant
     content: str
 
+
+class SpeakerWeight(BaseModel):
+    name: str
+    weight: str
+
 class ChatRequest(BaseModel):
     model: Optional[str] = "mistral"
     messages: List[Message]
+    weights: Optional[Dict[str, SpeakerWeight]] = None
+
 
 class Choice(BaseModel):
     index: int

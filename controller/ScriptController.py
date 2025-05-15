@@ -14,5 +14,5 @@ load_dotenv()
 async def store_script(req: Request, scriptService: ScriptService = Depends(get_script_service)):
     data = await req.json()
     script = data.get("script")
-    script_id = scriptService.save_script(script)
+    script_id = scriptService.save_script(script, weights, prompt_id)
     return {"status": "success","script_id": script_id}

@@ -30,3 +30,38 @@
 2025-05-10 21:18:49,369 - WARNING - No hostname was supplied. Reverting to default 'localhost'
 2025-05-10 21:20:19,130 - WARNING - No hostname was supplied. Reverting to default 'localhost'
 2025-05-10 21:24:07,274 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-15 00:30:20,308 - ERROR - Connection to Redis lost: Retry (0/20) now.
+2025-05-15 00:30:20,309 - ERROR - Connection to Redis lost: Retry (1/20) in 1.00 second.
+2025-05-15 00:30:21,310 - ERROR - Connection to Redis lost: Retry (2/20) in 1.00 second.
+2025-05-15 00:30:22,313 - ERROR - Connection to Redis lost: Retry (3/20) in 1.00 second.
+2025-05-15 00:30:23,316 - ERROR - Connection to Redis lost: Retry (4/20) in 1.00 second.
+2025-05-15 00:30:24,318 - ERROR - Connection to Redis lost: Retry (5/20) in 1.00 second.
+2025-05-15 00:30:25,321 - ERROR - Connection to Redis lost: Retry (6/20) in 1.00 second.
+2025-05-15 00:30:26,323 - ERROR - Connection to Redis lost: Retry (7/20) in 1.00 second.
+2025-05-15 00:30:27,325 - ERROR - Connection to Redis lost: Retry (8/20) in 1.00 second.
+2025-05-15 00:30:28,329 - ERROR - Connection to Redis lost: Retry (9/20) in 1.00 second.
+2025-05-15 00:30:29,330 - ERROR - Connection to Redis lost: Retry (10/20) in 1.00 second.
+2025-05-15 00:30:30,332 - ERROR - Connection to Redis lost: Retry (11/20) in 1.00 second.
+2025-05-15 00:30:31,335 - ERROR - Connection to Redis lost: Retry (12/20) in 1.00 second.
+2025-05-15 00:30:32,338 - ERROR - Connection to Redis lost: Retry (13/20) in 1.00 second.
+2025-05-15 00:30:33,340 - ERROR - Connection to Redis lost: Retry (14/20) in 1.00 second.
+2025-05-15 00:30:34,344 - ERROR - Connection to Redis lost: Retry (15/20) in 1.00 second.
+2025-05-15 00:30:35,348 - ERROR - Connection to Redis lost: Retry (16/20) in 1.00 second.
+2025-05-15 00:30:36,355 - ERROR - Connection to Redis lost: Retry (17/20) in 1.00 second.
+2025-05-15 00:30:37,360 - ERROR - Connection to Redis lost: Retry (18/20) in 1.00 second.
+2025-05-15 00:30:38,367 - ERROR - Connection to Redis lost: Retry (19/20) in 1.00 second.
+2025-05-15 00:30:39,373 - CRITICAL - 
+Retry limit exceeded while trying to reconnect to the Celery redis result store backend. The Celery application must be restarted.
+
+2025-05-15 14:38:48,023 - ERROR - Connection to Redis lost: Retry (0/20) now.
+2025-05-15 14:38:48,023 - ERROR - Connection to Redis lost: Retry (1/20) in 1.00 second.
+2025-05-15 14:38:49,031 - ERROR - Connection to Redis lost: Retry (2/20) in 1.00 second.
+2025-05-15 14:38:50,037 - ERROR - Connection to Redis lost: Retry (3/20) in 1.00 second.
+2025-05-15 14:38:51,039 - ERROR - Connection to Redis lost: Retry (4/20) in 1.00 second.
+2025-05-15 14:38:52,046 - ERROR - Connection to Redis lost: Retry (5/20) in 1.00 second.
+2025-05-15 17:09:49,014 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2025-05-15 17:21:08,660 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2025-05-15 17:40:52,205 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2025-05-15 17:56:46,303 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2025-05-15 18:55:13,088 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2025-05-15 19:06:02,942 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"

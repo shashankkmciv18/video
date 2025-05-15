@@ -24,11 +24,11 @@ class ScriptRepository:
         self.commit()
         return section_id
 
-    def create_dialogue(self, speaker, tone, dialogue, pause, seq_id, script_id, section_id):
+    def create_dialogue(self, speaker, tone, dialogue, pause, seq_id, script_id, section_id,voice_id):
         self.cursor.execute(
-            """INSERT INTO dialogues (speaker, tone, dialogue, pause, seq_id, script_id, section_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (speaker, tone, dialogue, pause, seq_id, script_id, section_id)
+            """INSERT INTO dialogues (speaker, tone, dialogue, pause, seq_id, script_id, section_id, voice_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?,?)""",
+            (speaker, tone, dialogue, pause, seq_id, script_id, section_id, voice_id)
         )
         self.commit()
 
