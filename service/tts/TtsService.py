@@ -81,6 +81,7 @@ class TtsService:
             self.script_service.create_dialogue_mapping(dialogue_id, job_id, status="pending", batch_id=current_batch_id)
             delay = (i+1)*45
             TtsTaskDispatcher.dispatch_tts_generation(text, voice_id, self.processor.name, dialogue_id, job_id,delay)
+        return current_batch_id
 
     def get_cdn_url(self):
         return self.processor.get_cdn_url()

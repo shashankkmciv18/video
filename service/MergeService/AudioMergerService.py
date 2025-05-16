@@ -2,7 +2,6 @@ import os
 
 from dependencies.ScriptDependency import get_script_repo, get_script_service
 from dependencies.TTSDependency import get_tts_service, get_tts_repo
-from eventHandler.AudioEvents import download_and_merge_audio
 
 
 class AudioMergerService:
@@ -32,6 +31,7 @@ class AudioMergerService:
             "output_path": output_path,
             "cdn_host": self.tts_service.get_cdn_url()
         }
+        from eventHandler.AudioEvents import download_and_merge_audio
         download_and_merge_audio.apply_async(args=[payload], countdown=5)
 
 

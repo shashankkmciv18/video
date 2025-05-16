@@ -5,12 +5,12 @@ from celery.exceptions import MaxRetriesExceededError
 
 from dependencies.ScriptDependency import get_script_service, get_script_repo
 from dependencies.TTSDependency import get_tts_service, get_tts_repo
-from eventHandler import ttsEvent
+from eventHandler.AudioEvents import  check_and_merge_audio_event
 from eventHandler.celery_app import celery_app
 
 
-# @celery_app.task(bind=True, max_retries=3, default_retry_delay=120)
-def llmChatEvent(event_data: dict):
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=120)
+def llmChatEvent(self, event_data: dict):
     print("[LLM]  ::Fetching status for {event_data}")
     system_prompt = event_data.get("system_prompt")
     user_prompt = event_data.get("user_prompt")
@@ -34,7 +34,8 @@ def llmChatEvent(event_data: dict):
                 script_id = script_service.save_script(script, weights, prompt_id)
                 print(f"Script ID: {script_id}")
                 tts_service = get_tts_service(get_tts_repo())
-                tts_service.generate_script_audio(script_id)
+                batch_id = tts_service.generate_script_audio(script_id)
+                check_and_merge_audio_event.apply_async(args=[batch_id])
             except Exception as e:
                 print(f"Error saving script: {e}")
         except Exception as e:

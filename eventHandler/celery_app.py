@@ -1,6 +1,11 @@
 from celery import Celery
 from kombu import Queue, Exchange
 
+# Define queue names as constants for easier maintenance
+YOUTUBE_QUEUE = 'youtube'
+AUDIO_QUEUE = 'audio_queue'
+LLM_QUEUE = 'llm'
+
 celery_app = Celery(
     "eventHandler",
     broker="redis://localhost:6379/0",
@@ -15,12 +20,11 @@ celery_app.conf.update(
     enable_utc=False,
 )
 
-# Declare the 'youtube' queue
-
+# Define queues with their exchanges and routing keys
 celery_app.conf.task_queues = (
-    Queue('youtube', Exchange('youtube', type='direct'), routing_key='youtube'),
-    Queue('audio_queue', Exchange('audio_queue', type='direct'), routing_key='audio_queue'),
-    Queue('llm', Exchange('llm', type='direct'), routing_key='llm'),
+    Queue(YOUTUBE_QUEUE, Exchange(YOUTUBE_QUEUE, type='direct'), routing_key=YOUTUBE_QUEUE),
+    Queue(AUDIO_QUEUE, Exchange(AUDIO_QUEUE, type='direct'), routing_key=AUDIO_QUEUE),
+    Queue(LLM_QUEUE, Exchange(LLM_QUEUE, type='direct'), routing_key=LLM_QUEUE),
 )
 # Autodiscover tasks in the flat eventHandler module
 celery_app.autodiscover_tasks([
@@ -32,15 +36,26 @@ celery_app.autodiscover_tasks([
     "eventHandler.LlmEvents",
 ])
 
-# Define routing for specific tasks
+# Celery task routing configuration
 celery_app.conf.task_routes = {
-    # 'eventHandler.YoutubeEvent.youtubeEvent': {'queue': 'youtube'},
-    # 'eventHandler.InstagramEvent.instagramUploadEvent': {'queue': 'youtube'},
-    'eventHandler.TTSEvent.ttsEvent': {'queue': 'youtube'},
-    'eventHandler.TTSEventNew.ttsEvent': {'queue': 'youtube'},
-    'eventHandler.AdditionEvent.addEvent': {'queue': 'youtube'},
-    'eventHandler.TTSEvent.tts_audio_generation_event': {'queue': 'youtube'},
-    'eventHandler.AudioEvents.audio_merge_task': {'queue': 'audio_queue'},
-    'eventHandler.LlmEvents.llmChatEvent': {'queue': 'youtube'},
+    # TTS Events
+    'eventHandler.TTSEvent.ttsEvent': {'queue': YOUTUBE_QUEUE},
+    'eventHandler.TTSEventNew.ttsEvent': {'queue': YOUTUBE_QUEUE},
+    'eventHandler.TTSEvent.tts_audio_generation_event': {'queue': YOUTUBE_QUEUE},
+
+    # Addition Event
+    'eventHandler.AdditionEvent.addEvent': {'queue': YOUTUBE_QUEUE},
+
+    # Audio Merge Task
+    'eventHandler.AudioEvents.audio_merge_task': {'queue': AUDIO_QUEUE},
+    'eventHandler.AudioEvents.check_and_merge_audio_event': {'queue': AUDIO_QUEUE},
+
+    # LLM Chat Event
+    'eventHandler.LlmEvents.llmChatEvent': {'queue': YOUTUBE_QUEUE},
 
 }
+
+# NOTE:
+# - Ensure the task names above match the 'name' parameter in your @celery_app.task decorators.
+# - If you use custom task names (e.g., name="audio_merge_task"), use that name as the key.
+# - Commented routes are preserved for reference but not currently active.
