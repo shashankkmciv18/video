@@ -37,7 +37,7 @@ class LanguageService:
         prompt += "[Assistant]:"
         return prompt.strip()
 
-    def chat(self, messages: list[Message], model: str, weights : Dict[str, SpeakerWeight]) -> dict:
+    def chat(self, messages: list[Message], model: str, weights: Dict[str, SpeakerWeight], client_id: str) -> dict:
         prompt_id = str(uuid.uuid4())
         self.repo.add_prompt(
             prompt_id=prompt_id,
@@ -45,16 +45,15 @@ class LanguageService:
             user_prompt=messages[1].content
         )
 
-
         try:
             payload = {
                 "system_prompt": messages[0].content,
                 "user_prompt": messages[1].content,
-                "model" : model,
+                "model": model,
                 "prompt_id": prompt_id,
-                "weights": weights
+                "weights": weights,
+                "client_id": client_id
             }
-            # llmChatEvent(dict(payload))
             llmChatEvent.apply_async(args=[payload], countdown=20)
         except Exception as e:
             print(f"Error occurred during LLM chat: {e}")
@@ -64,6 +63,3 @@ class LanguageService:
             "object": "chat.completion",
             "status": "pending",
         }
-
-
-

@@ -6,7 +6,7 @@ from eventHandler.celery_app import celery_app
 from dependencies.TTSDependency import get_tts_service
 
 
-@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=60, name = 'ttsEvent')
 def ttsEvent(self, event_data: dict):
     print(f"[TTS]  ::Fetching status for {event_data}")
     event = event_data
@@ -29,7 +29,7 @@ def ttsEvent(self, event_data: dict):
     print(f"[TTS]  Fetching Status successful")
 
 
-@celery_app.task(bind=True, max_retries=2, default_retry_delay=60)
+@celery_app.task(bind=True, max_retries=2, default_retry_delay=60, name ='tts_audio_generation_event')
 def tts_audio_generation_event(self, event_data: dict):
     print(f"[TTS] TTS ::Generating audio for {event_data}")
     event = event_data

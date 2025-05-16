@@ -72,6 +72,12 @@ class ScriptRepository:
 
         return self.conn.execute(query, batch_ids).fetchall()
 
+    def are_all_status_success(self, batch_ids: list[str]):
+        query = """ SELECT COUNT(*) AS total_minus_success
+            FROM dialogue_tts_mapping
+            WHERE batch_id = 'your_batch_id'
+            AND status != 'success';
+            """
 
 
     def commit(self):

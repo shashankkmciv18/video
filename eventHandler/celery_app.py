@@ -39,19 +39,16 @@ celery_app.autodiscover_tasks([
 # Celery task routing configuration
 celery_app.conf.task_routes = {
     # TTS Events
-    'eventHandler.TTSEvent.ttsEvent': {'queue': YOUTUBE_QUEUE},
-    'eventHandler.TTSEventNew.ttsEvent': {'queue': YOUTUBE_QUEUE},
-    'eventHandler.TTSEvent.tts_audio_generation_event': {'queue': YOUTUBE_QUEUE},
+    'ttsEvent': {'queue': YOUTUBE_QUEUE},
+    'tts_audio_generation_event': {'queue': YOUTUBE_QUEUE},
 
-    # Addition Event
-    'eventHandler.AdditionEvent.addEvent': {'queue': YOUTUBE_QUEUE},
 
     # Audio Merge Task
-    'eventHandler.AudioEvents.audio_merge_task': {'queue': AUDIO_QUEUE},
-    'eventHandler.AudioEvents.check_and_merge_audio_event': {'queue': AUDIO_QUEUE},
+    'audio_merge_task': {'queue': AUDIO_QUEUE},
+    'check_and_merge_audio_event': {'queue': AUDIO_QUEUE},
 
     # LLM Chat Event
-    'eventHandler.LlmEvents.llmChatEvent': {'queue': YOUTUBE_QUEUE},
+    'llmChatEvent': {'queue': YOUTUBE_QUEUE},
 
 }
 
