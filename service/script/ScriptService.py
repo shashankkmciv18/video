@@ -48,8 +48,8 @@ class ScriptService:
     def create_dialogue_mapping(self, dialogue_id, job_id, status, batch_id: str):
         self.repo.create_dialogue_mapping(dialogue_id, job_id, status, batch_id)
 
-    def fetch_audio_entries(self, batch_id: list[str]):
-        rows = self.repo.fetch_tts_op(batch_ids=batch_id)
+    def fetch_audio_entries(self, batch_id: str):
+        rows = self.repo.fetch_tts_op(batch_id=batch_id)
         rows_dicts = [dict(row) for row in rows]
         return rows_dicts
 

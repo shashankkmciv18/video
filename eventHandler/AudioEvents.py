@@ -11,14 +11,16 @@ from celery import shared_task
 from dependencies.ScriptDependency import get_script_service, get_script_repo
 from dependencies.TTSDependency import get_tts_service, get_tts_repo
 from service.MergeService.AudioMergerService import AudioMergerService
+from service.MergeService.MergerHelper import  helper
 
 script_service = get_script_service(get_script_repo())
 tts_service = get_tts_service(get_tts_repo())
 merger_service = AudioMergerService()
 
 
-@celery_app.task(bind=True, max_retries=3, default_retry_delay=60, name="audio_merge_task", queue="audio_queue")
-def download_and_merge_audio(self, event_data: dict):
+# @celery_app.task(bind=True, max_retries=3, default_retry_delay=60, name="audio_merge_task", queue="audio_queue")
+# def download_and_merge_audio(self, event_data: dict):
+def download_and_merge_audio(event_data: dict):
     """
     entries: List of dictionaries with keys:
         - 'status': Status of the audio file (e.g., 'complete_success')
@@ -28,6 +30,7 @@ def download_and_merge_audio(self, event_data: dict):
     cdn_host: Base URL of the CDN (e.g., 'https://cdn.example.com')
     output_dir: Directory where the merged audio file will be saved
     """
+
     path = helper(event_data=event_data)
     if path:
         s3_uploader_service = S3UploaderService()
@@ -40,7 +43,7 @@ def download_and_merge_audio(self, event_data: dict):
         print(f"File uploaded to S3: {upload_url}")
 
 
-def helper(event_data: dict):
+def helper1(event_data: dict):
     entries = event_data["entries"]
     cdn_host = event_data["cdn_host"]
     output_dir = event_data["output_path"]
@@ -118,7 +121,7 @@ def helper(event_data: dict):
 @celery_app.task(bind=True, max_retries=10, default_retry_delay=60, name="check_and_merge_audio_event", queue="audio_queue")
 def check_and_merge_audio_event(self, batch_id):
     # Fetch all audio entries for the batch
-    entries = script_service.fetch_audio_entries([batch_id])
+    entries = merger_service.fetch(batch_id)
     if not entries:
         print(f"No entries found for batch {batch_id}")
         return

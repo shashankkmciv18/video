@@ -56,21 +56,22 @@ class ScriptRepository:
         )
         self.commit()
 
-    def fetch_tts_op(self, batch_ids: list[str]):
-        query = """
-        SELECT
-            dtm.status,
-            d.seq_id,
-            tj.result_url AS voice_url,
-            d.pause AS pause_seconds
-        FROM dialogue_tts_mapping dtm
-        JOIN tts_jobs tj ON dtm.job_id = tj.job_id
-        JOIN dialogues d ON dtm.dialogue_id = d.id
-        WHERE dtm.batch_id IN ({seq})
-        ORDER BY d.seq_id
-        """.format(seq=','.join('?' for _ in batch_ids))
-
-        return self.conn.execute(query, batch_ids).fetchall()
+    def fetch_tts_op(self, batch_id):
+        query = f"""
+            SELECT
+                dtm.status,
+                d.seq_id,
+                d.dialogue as text,
+                tj.result_url AS voice_url,
+                d.pause AS pause_seconds,
+                d.speaker as Speaker
+            FROM dialogue_tts_mapping dtm
+            JOIN tts_jobs tj ON dtm.job_id = tj.job_id
+            JOIN dialogues d ON dtm.dialogue_id = d.id
+            WHERE dtm.batch_id  = ?
+            ORDER BY d.seq_id
+        """
+        return self.conn.execute(query, (batch_id,)).fetchall()
 
     def are_all_status_success(self, batch_ids: list[str]):
         query = """ SELECT COUNT(*) AS total_minus_success

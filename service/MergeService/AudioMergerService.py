@@ -13,12 +13,12 @@ class AudioMergerService:
         # Set the TTS processor type
         self.tts_service.processor = self.tts_service.get_processor(processor_type)
 
-    def fetch(self, batch_id: list[str]):
+    def fetch(self, batch_id: str):
         audio_entries = self.script_service.fetch_audio_entries(batch_id)
         return audio_entries
 
     def merge(self, batch_id: str):
-        entries = self.fetch(batch_id=[batch_id])
+        entries = self.fetch(batch_id=batch_id)
         relative_output_path = os.getenv("OUTPUT_PATH")
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +32,8 @@ class AudioMergerService:
             "batch_id": batch_id
         }
         from eventHandler.AudioEvents import download_and_merge_audio
-        download_and_merge_audio.apply_async(args=[payload], countdown=5)
+        # download_and_merge_audio.apply_async(args=[payload], countdown=5)
+        download_and_merge_audio(dict(payload))
 
     def save_audio(self, merged_audio, output_path: str):
         # Save the merged audio to the specified path

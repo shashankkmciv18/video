@@ -10,17 +10,16 @@ load_dotenv()
 
 
 @router.post("/audio/merge")
-async def merge_audi(req: Request,
-                     audio_merger_service: AudioMergerService = Depends(get_audio_merger_service)
-                     ):
+async def merge_audio(req: Request,
+                      audio_merger_service: AudioMergerService = Depends(get_audio_merger_service)
+                      ):
     data = await req.json()
-    batch_ids = data.get("batch_id", [])
+    batch_id = data.get("batch_id", None)
 
     audio_merger_service.set_processor(processor_type="FakeYouTTSProcessor")
-    audio_merger_service.merge(batch_id=batch_ids)
+    audio_merger_service.merge(batch_id=batch_id)
     return {
         "status": "success",
         "message": "Audio merging started",
-        "batch_id": batch_ids
+        "batch_id": batch_id
     }
-
