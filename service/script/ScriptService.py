@@ -6,7 +6,7 @@ class ScriptService:
         self.repo = repo
 
     def save_script(self, data, weights, prompt_id):
-        title = data.get('podcast_title') or data.get('title') or "default"
+        title = data.get('podcast_title') or data.get('topic') or "default"
         script_id = self.repo.create_script(title)
 
         seq_counter = 1
@@ -19,15 +19,16 @@ class ScriptService:
             for dialogue in dialogues:
                 if not isinstance(dialogue, dict):
                     continue
+                speaker = dialogue.get("Speaker") or dialogue.get("speaker")
                 self.repo.create_dialogue(
-                    speaker=dialogue["Speaker"],
-                    tone=dialogue["Tone"],
-                    dialogue=dialogue["Dialogue"],
-                    pause=dialogue.get("Pause", 0),
+                    speaker=speaker,
+                    tone=dialogue.get("Tone") or dialogue.get("tone"),
+                    dialogue=dialogue.get("Dialogue") or dialogue.get("dialogue"),
+                    pause=dialogue.get("Pause") or dialogue.get("pause") or 0,
                     seq_id=seq_counter,
                     script_id=script_id,
                     section_id=section_id,
-                    voice_id = weights[dialogue["Speaker"]]["weight"]
+                    voice_id=weights[speaker]["weight"]
                 )
                 seq_counter += 1
 

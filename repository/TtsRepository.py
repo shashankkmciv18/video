@@ -38,10 +38,8 @@ class TtsRepository:
 
     def create_job_batch(self, batch_id: str):
         self.cursor.execute(
-            """
-                INSERT into job_batch (id)
-                    values (?)
-            """, (batch_id)
+            "INSERT INTO job_batch (id) VALUES (?)",
+            (batch_id,)
         )
         self.db.commit()
 

@@ -57,6 +57,7 @@ class LanguageService:
             try:
 
                 llmChatEvent.apply_async(args=[payload], countdown=20)
+                # llmChatEvent(dict(payload))
             except Exception as e:
                 print(f"Exception: {e}")
         except Exception as e:

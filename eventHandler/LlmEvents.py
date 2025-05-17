@@ -43,6 +43,7 @@ def llmChatEvent(self, event_data: dict):
         )
         response = chat_with_ai_client(client, system_prompt, user_prompt, model)
         content_str = extract_message_content(response)
+
         print(content_str)
         script_id = save_script_from_content(content_str, weights, prompt_id)
 
