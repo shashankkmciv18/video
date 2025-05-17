@@ -65,3 +65,14 @@ Retry limit exceeded while trying to reconnect to the Celery redis result store 
 2025-05-15 17:56:46,303 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
 2025-05-15 18:55:13,088 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
 2025-05-15 19:06:02,942 - INFO - HTTP Request: POST http://127.0.0.1:11434/api/chat "HTTP/1.1 200 OK"
+2025-05-16 21:20:05,352 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-05-16 21:20:42,699 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-16 21:21:58,129 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-16 21:27:18,492 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-05-16 21:28:05,398 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-16 21:32:18,539 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-16 21:32:38,624 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-16 21:34:17,839 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-16 21:34:36,749 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-16 21:39:39,992 - WARNING - No hostname was supplied. Reverting to default 'localhost'
+2025-05-16 21:42:41,114 - WARNING - No hostname was supplied. Reverting to default 'localhost'

@@ -6,12 +6,12 @@ class ScriptService:
         self.repo = repo
 
     def save_script(self, data, weights, prompt_id):
-        title = data['Topic']
+        title = data.get('podcast_title') or data.get('title') or "default"
         script_id = self.repo.create_script(title)
 
         seq_counter = 1
         for section_name, dialogues in data.items():
-            if section_name in ("Topic", "Podcast_Title"):
+            if section_name.lower() in ("topic", "podcast_title"):
                 continue
 
             section_id = self.repo.create_section(section_name, script_id)
@@ -27,7 +27,7 @@ class ScriptService:
                     seq_id=seq_counter,
                     script_id=script_id,
                     section_id=section_id,
-                    voice_id = weights[dialogue["Speaker"]].weight
+                    voice_id = weights[dialogue["Speaker"]]["weight"]
                 )
                 seq_counter += 1
 

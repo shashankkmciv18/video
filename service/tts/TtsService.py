@@ -61,7 +61,7 @@ class TtsService:
 
             if response["status"].lower() not in ["complete_success", "complete_failure", "dead", "complete", "failed",
                                                   "success"]:
-                TtsTaskDispatcher.dispatch_generate_status(job_id, external_id, self.processor.name,dialogue_id)
+                TtsTaskDispatcher.dispatch_generate_status(job_id, external_id, self.processor.name, dialogue_id)
             self.repo.update_job(job_id, response["status"], external_id, response["result_url"])
 
             print(f'Updating dialogue {dialogue_id} :  job_id {job_id} and status {response["status"]}')
@@ -69,21 +69,29 @@ class TtsService:
         else:
             self.repo.get_job_status(job_id)
 
-    def generate_script_audio(self, script_id):
+    def generate_script_audio(self, script_id, batch_id):
         dialogues = self.script_service.get_dialogues(script_id)
-        current_batch_id = str(uuid.uuid4())
+        current_batch_id = batch_id
         for i, dialogueEntry in enumerate(dialogues):
             dialogue_id = dialogueEntry["id"]
             text = dialogueEntry["dialogue"]
             tone = dialogueEntry["tone"]
             voice_id = dialogueEntry["voice_id"]
             job_id = self.create_job(text, voice_id)
-            self.script_service.create_dialogue_mapping(dialogue_id, job_id, status="pending", batch_id=current_batch_id)
-            delay = (i+1)*45
-            TtsTaskDispatcher.dispatch_tts_generation(text, voice_id, self.processor.name, dialogue_id, job_id,delay)
+            self.script_service.create_dialogue_mapping(dialogue_id, job_id, status="pending",
+                                                        batch_id=current_batch_id)
+            delay = (i + 1) * 45
+            TtsTaskDispatcher.dispatch_tts_generation(text, voice_id, self.processor.name, dialogue_id, job_id, delay)
         return current_batch_id
 
     def get_cdn_url(self):
         return self.processor.get_cdn_url()
 
+    def create_job_batch(self):
+        batch_id = str(uuid.uuid4())
+        self.repo.create_job_batch(batch_id)
+        return batch_id
 
+    def update_job_batch(self, batch_id, status, cdn_url=None):
+        self.repo.update_job_batch(batch_id, status, cdn_url)
+        pass

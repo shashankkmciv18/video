@@ -54,7 +54,11 @@ class LanguageService:
                 "weights": weights,
                 "client_id": client_id
             }
-            llmChatEvent.apply_async(args=[payload], countdown=20)
+            try:
+
+                llmChatEvent.apply_async(args=[payload], countdown=20)
+            except Exception as e:
+                print(f"Exception: {e}")
         except Exception as e:
             print(f"Error occurred during LLM chat: {e}")
 

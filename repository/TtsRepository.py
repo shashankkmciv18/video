@@ -1,4 +1,3 @@
-
 class TtsRepository:
     def __init__(self, db_cursor, db_connection):
         self.cursor = db_cursor
@@ -36,3 +35,23 @@ class TtsRepository:
         """, (job_id,))
         result = self.cursor.fetchone()
         return result[0] if result else None
+
+    def create_job_batch(self, batch_id: str):
+        self.cursor.execute(
+            """
+                INSERT into job_batch (id)
+                    values (?)
+            """, (batch_id)
+        )
+        self.db.commit()
+
+    def update_job_batch(self, batch_id: str, status: str, url: str = None):
+        self.cursor.execute(
+            """
+                UPDATE job_batch
+                SET status = ?,
+                    cdn_url = ?
+                WHERE id = ?
+            """, (status, url, batch_id)
+        )
+        self.db.commit()

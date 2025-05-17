@@ -41,5 +41,6 @@ async def generate_script_audio(req: Request, tts_service: TtsService = Depends(
 
     data = await req.json()
     script_id = data.get("script_id")
-    tts_service.generate_script_audio(script_id)
+    batch_id = data.get("batch_id")
+    tts_service.generate_script_audio(script_id, batch_id)
     return {"message": "Audio generation started for the script."}

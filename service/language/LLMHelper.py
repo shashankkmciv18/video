@@ -1,4 +1,4 @@
-def chat_with_openrouter(client, system_prompt, user_prompt, model):
+def chat_with_ai_client(client, system_prompt, user_prompt, model):
     response = client.chat.completions.create(
         model=model,
         messages=[

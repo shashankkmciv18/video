@@ -34,6 +34,9 @@ def download_and_merge_audio(self, event_data: dict):
         s3_file_key = f"audio/{os.path.basename(path)}"
         print(f"Uploading {path} to S3 with key {s3_file_key}")
         upload_url = s3_uploader_service.upload_file_to_s3(file_path=path, s3_file_key=s3_file_key)
+        if upload_url:
+            print(event_data)
+            tts_service.update_job_batch(event_data["batch_id"], "complete_success", upload_url)
         print(f"File uploaded to S3: {upload_url}")
 
 
@@ -112,7 +115,7 @@ def helper(event_data: dict):
     return output_path
 
 
-@shared_task(bind=True, max_retries=10, default_retry_delay=60, name="check_and_merge_audio_event", queue="audio_queue")
+@celery_app.task(bind=True, max_retries=10, default_retry_delay=60, name="check_and_merge_audio_event", queue="audio_queue")
 def check_and_merge_audio_event(self, batch_id):
     # Fetch all audio entries for the batch
     entries = script_service.fetch_audio_entries([batch_id])
@@ -126,7 +129,7 @@ def check_and_merge_audio_event(self, batch_id):
     if all_success:
         print(f"All jobs in batch {batch_id} are successful. Merging audio.")
 
-        merger_service.merge([batch_id])
+        merger_service.merge(batch_id)
     else:
         try:
             # Exponential backoff: delay = default_retry_delay * (2 ** (retry_count - 1))

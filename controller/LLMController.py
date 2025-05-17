@@ -12,7 +12,7 @@ load_dotenv()
 
 languageService = LanguageService()
 
-@router.post("/v1/chat/completions")
+@router.post("/chat/completions")
 def chat(req: ChatRequest):
     result = languageService.chat(req.messages, req.model, req.weights, req.client_id)
 

@@ -14,7 +14,8 @@ class SpeakerWeight(BaseModel):
 class ChatRequest(BaseModel):
     model: Optional[str] = "mistral"
     messages: List[Message]
-    weights: Optional[Dict[str, SpeakerWeight]] = None
+    weights: Optional[Dict[str, Dict[str, str]]] = None
+    client_id : Optional[str] = None
 
 
 class Choice(BaseModel):
