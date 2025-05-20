@@ -5,6 +5,7 @@ import requests
 
 FONT_PATH = os.path.abspath(os.path.join(os.getcwd(), "resources/Roboto-Medium.ttf"))
 BACKGROUND_PATH = os.path.abspath(os.path.join(os.getcwd(), "resources/image/bg.png"))
+TRANSPARENT_BACKGROUND_PATH = os.path.abspath(os.path.join(os.getcwd(), "resources/image/transparent_bg.png"))
 
 
 def download_audio(url, output_path):
@@ -82,8 +83,8 @@ def getCodecAndPix_Fmtt(ext):
         "codec": codec,
         "pix_fmt": pix_fmt
     }
-def generate_waveform(audio_path, output_path, resolution="1920x120", duration=5.0, waveform_color="white@0.3"):
-    background_color  = "blue"
+def generate_waveform(audio_path, output_path, resolution="1920x120", duration=5.0, waveform_color="white@0.7"):
+    background_color  = "pink"
     command = [
         "ffmpeg", "-y",
         "-i", audio_path,
@@ -104,17 +105,28 @@ def generate_waveform(audio_path, output_path, resolution="1920x120", duration=5
     ]
     subprocess.run(command, check=True)
 
-def generate_waveform_with_image_bg(audio_path, background_image, output_path, resolution="1920x720", duration=5.0, waveform_color="white@0.6"):
+def generate_waveform_with_image_bg(audio_path, background_image, output_path, resolution="1920x720", duration=5.0, waveform_color="white@1.0"):
+
+    filter_chain = [
+        f"[1:v]scale={resolution},format=rgba,colorchannelmixer=aa=0.5[bg]",  # Transparent background image
+        f"[0:a]showwaves=s={resolution}:mode=line:colors={waveform_color}:scale=sqrt,format=yuva420p[wave]",
+        f"[bg][wave]overlay=format=auto[out]"
+    ]
+    # filter_chain = [
+    #     "[0:a]showwaves=colors=0xff1646@0.3:scale=sqrt:mode=cline,format=yuva420p[v]",
+    #     "[1:v]scale=19200:400[bg]",
+    #     "[bg][v]overlay=(W-w)/2:(H-h)/2[out]"
+    # ]
+
+    filter_complex = ";".join(filter_chain)
+
     command = [
         "ffmpeg", "-y",
-        "-i", audio_path,
-        "-loop", "1", "-t", str(duration), "-i", background_image,
-        "-filter_complex",
-        f"[0:a]showwaves=s={resolution}:mode=cline:colors={waveform_color}[wave];"
-        f"[1:v][wave]overlay=format=auto[out]",
+        "-i", audio_path,  # Input audio
+        "-i", background_image,  # Background image
+        "-filter_complex", filter_complex,
         "-map", "[out]", "-map", "0:a",
         "-c:v", "libx264",
-        # "-auto-alt-ref", "0",
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-t", str(duration),
@@ -128,9 +140,15 @@ def compose_video(background_path, waveform_path, audio_path, speaker, subtitle_
     subtitle_drawtexts = generate_drawtext_filters(chunks, duration, FONT_PATH)
 
     # Start building the filter chain
+    # filter_chain = [
+    #     f"[0:v]scale=1920:1080[bg_scaled]",
+    #     f"[bg_scaled][1:v]overlay=x=(W-w)/2:y=650:format=auto[bg_wave]",
+    #     f"[bg_wave]drawtext=fontfile='{FONT_PATH}':text='{speaker}':fontcolor=white:fontsize=72:x=200:y=200[label_stage]"
+    # ]
     filter_chain = [
         f"[0:v]scale=1920:1080[bg_scaled]",
-        f"[bg_scaled][1:v]overlay=x=(W-w)/2:y=650:format=auto[bg_wave]",
+        f"[1:v]scale=800:60[wave_scaled]",
+        f"[bg_scaled][wave_scaled]overlay=x=600:y=600:format=auto[bg_wave]",
         f"[bg_wave]drawtext=fontfile='{FONT_PATH}':text='{speaker}':fontcolor=white:fontsize=72:x=200:y=200[label_stage]"
     ]
 
@@ -185,7 +203,7 @@ def helper(event_data: dict):
         try:
             download_audio(audio_url, audio_path)
             duration = get_audio_duration(audio_path)
-            generate_waveform_with_image_bg(audio_path, BACKGROUND_PATH, waveform_path, duration=duration)
+            generate_waveform_with_image_bg(audio_path, TRANSPARENT_BACKGROUND_PATH, waveform_path, duration=duration)
 
             compose_video(
                 background_path=BACKGROUND_PATH,
