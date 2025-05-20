@@ -1,102 +1,168 @@
 import os
 import uuid
-import json
-import tempfile
 import subprocess
 import requests
-from moviepy import AudioFileClip, ImageClip, TextClip, CompositeVideoClip, VideoFileClip, vfx
-import cv2
-from moviepy.video.fx import Resize
-from moviepy.video.fx import HeadBlur
+
+FONT_PATH = os.path.abspath(os.path.join(os.getcwd(), "resources/Roboto-Medium.ttf"))
+BACKGROUND_PATH = os.path.abspath(os.path.join(os.getcwd(), "resources/image/bg.png"))
 
 
-def download_audio(full_url, dest_path):
-    """Download audio file from CDN"""
-    response = requests.get(full_url, stream=True, timeout=(5, 15))
-    response.raise_for_status()
-    with open(dest_path, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                f.write(chunk)
+def download_audio(url, output_path):
+    resp = requests.get(url)
+    with open(output_path, "wb") as f:
+        f.write(resp.content)
 
 
-def generate_waveform(audio_path, output_path):
-    command = [
-        'ffmpeg', '-y', '-i', audio_path,
-        '-filter_complex', '[0:a]showwaves=s=1280x120:mode=line:colors=white[v]',
-        '-map', '[v]',
-        '-pix_fmt', 'yuv420p',
+def get_audio_duration(audio_path):
+    result = subprocess.run([
+        "ffprobe", "-v", "error", "-show_entries",
+        "format=duration", "-of", "default=noprint_wrappers=1:nokey=1",
+        audio_path
+    ], stdout=subprocess.PIPE, text=True)
+    return float(result.stdout.strip())
+
+
+def chunk_text(text, max_words=5):
+    words = text.split()
+    return [' '.join(words[i:i + max_words]) for i in range(0, len(words), max_words)]
+
+
+def generate_drawtext_filters(chunks, duration, font_path, start_y=400, line_spacing=80):
+    chunk_duration = (duration * 0.95) / len(chunks)
+    filter_lines = []
+    for i, chunk in enumerate(chunks):
+        safe_chunk = chunk.replace("'", "\\'")
+        start = round(i * chunk_duration, 2)
+        end = round((i + 1) * chunk_duration, 2)
+        y = start_y
+        filter_lines.append(
+            f"drawtext=fontfile='{font_path}':text='{safe_chunk}':"
+            f"fontcolor=white:fontsize=60:x=(w-text_w)/2:y={y}:"
+            f"enable='between(t,{start},{end})'"
+        )
+    return filter_lines
+
+
+def merge_videos(video_paths, output_path):
+    import tempfile
+
+    # Step 1: Create a temporary list file for FFmpeg
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".txt") as list_file:
+        for path in video_paths:
+            # Important: escape single quotes and use absolute paths
+            list_file.write(f"file '{os.path.abspath(path)}'\n")
+        list_file_path = list_file.name
+
+    # Step 2: Run FFmpeg to concatenate the videos
+    cmd = [
+        "ffmpeg", "-y",
+        "-f", "concat",
+        "-safe", "0",
+        "-i", list_file_path,
+        "-c", "copy",
         output_path
     ]
-    result = subprocess.run(command, capture_output=True, text=True)
-    if result.returncode != 0:
-        print("FFmpeg error:", result.stderr)
-        raise RuntimeError("FFmpeg failed to generate waveform")
+
+    subprocess.run(cmd, check=True)
+
+    # Optional: Clean up list file
+    os.remove(list_file_path)
 
 
-def blur_image(image, ksize=25):
-    return cv2.GaussianBlur(image, (ksize, ksize), 0)
+def getCodecAndPix_Fmtt(ext):
+    if ext == ".mp4":
+        codec = "libx264"
+        pix_fmt = "yuva420p"
+    elif ext == ".webm":
+        codec = "libvpx"
+        pix_fmt = "yuva420p"
+    else:
+        raise ValueError(f"Unsupported output format: {ext}. Use .mp4 or .webm.")
+    return {
+        "codec": codec,
+        "pix_fmt": pix_fmt
+    }
+def generate_waveform(audio_path, output_path, resolution="1920x120", duration=5.0, waveform_color="white@0.3"):
+    background_color  = "blue"
+    command = [
+        "ffmpeg", "-y",
+        "-i", audio_path,
+
+        # 👇 Create a solid blue background instead of transparent
+        "-f", "lavfi", "-t", str(duration),
+        "-i", f"color=color={background_color}:s={resolution}:d={duration}",
+
+        "-filter_complex",
+        f"[0:a]showwaves=s={resolution}:mode=cline:colors={waveform_color}[wave]",
+        "-map", "[wave]", "-map", "0:a",
+        "-c:v", "libx264",
+        # "-auto-alt-ref", "0",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "aac",
+        "-t", str(duration),
+        output_path
+    ]
+    subprocess.run(command, check=True)
+
+def generate_waveform_with_image_bg(audio_path, background_image, output_path, resolution="1920x720", duration=5.0, waveform_color="white@0.6"):
+    command = [
+        "ffmpeg", "-y",
+        "-i", audio_path,
+        "-loop", "1", "-t", str(duration), "-i", background_image,
+        "-filter_complex",
+        f"[0:a]showwaves=s={resolution}:mode=cline:colors={waveform_color}[wave];"
+        f"[1:v][wave]overlay=format=auto[out]",
+        "-map", "[out]", "-map", "0:a",
+        "-c:v", "libx264",
+        # "-auto-alt-ref", "0",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "aac",
+        "-t", str(duration),
+        output_path
+    ]
+    subprocess.run(command, check=True)
 
 
-def get_background(duration):
-    image_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../resources/image/bg.jpg"))
+def compose_video(background_path, waveform_path, audio_path, speaker, subtitle_text, duration, output_path):
+    chunks = chunk_text(subtitle_text)
+    subtitle_drawtexts = generate_drawtext_filters(chunks, duration, FONT_PATH)
 
-    # Create the clip with duration set directly in constructor
-    clip = ImageClip(image_path, duration=duration)
+    # Start building the filter chain
+    filter_chain = [
+        f"[0:v]scale=1920:1080[bg_scaled]",
+        f"[bg_scaled][1:v]overlay=x=(W-w)/2:y=650:format=auto[bg_wave]",
+        f"[bg_wave]drawtext=fontfile='{FONT_PATH}':text='{speaker}':fontcolor=white:fontsize=72:x=200:y=200[label_stage]"
+    ]
 
-    # Apply Resize using the effect class
-    resized_clip = clip.with_effects([Resize(new_size=(1920, 1080))])
-    #
-    # # Optional: Apply a basic blur (if you really need blur, and no custom blur class is available)
-    # blurred_clip = resized_clip.with_effects([
-    #     HeadBlur(
-    #         fx=lambda t: 0.5,  # 50% from left
-    #         fy=lambda t: 0.5,  # 50% from top
-    #         radius=30  # blur radius in pixels
-    #     )
-    # ])
+    # Chain all subtitle chunks
+    current_label = "label_stage"
+    for i, filter_text in enumerate(subtitle_drawtexts):
+        next_label = f"sub{i}"
+        filter_chain.append(f"[{current_label}]{filter_text}[{next_label}]")
+        current_label = next_label
 
-    return resized_clip
+    # Final label
+    filter_chain.append(f"[{current_label}]copy[final]")
+    filter_complex = ";".join(filter_chain)
 
+    # Compose the command
+    command = [
+        "ffmpeg", "-y",
+        "-loop", "1", "-t", str(duration), "-i", background_path,
+        "-i", waveform_path,
+        "-i", audio_path,
+        "-filter_complex", filter_complex,
+        "-map", "[final]", "-map", "2:a",
+        "-c:v", "libx264",
+        # "-auto-alt-ref", "0",
+        "-pix_fmt", "yuv420p",  # Supports alpha in webm
+        "-c:a", "aac",  # required for webm compatibility
+        "-shortest",
 
-def get_speaker_label(name, duration, align_x=300, caption_y=520, caption_padding=200, label_offset_y=90):
-    font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../resources/arial.ttf"))
-    label_y = caption_y - label_offset_y
-    label_position = (align_x, label_y)
+        output_path
+    ]
 
-    clip = TextClip(font=font_path, text='S1', font_size=72, color=(255, 255, 0))
-    clip = clip.with_position(label_position).with_duration(duration)
-    return clip
-
-
-def get_subtitle(text, duration):
-    font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../resources/arial.ttf"))
-    return TextClip(font=font_path, text=text, font_size=48, color=(255, 255, 240)).with_position(
-        ("center", "bottom")).with_duration(duration)
-
-
-def get_waveform_clip(path, duration):
-    return VideoFileClip(path).with_duration(duration).with_position(("center", 720))
-
-
-def get_subtitle_chunks(text, duration, max_words=5, padding_bottom=200):
-    font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../resources/arial.ttf"))
-    words = text.split()
-    chunks = [' '.join(words[i:i+max_words]) for i in range(0, len(words), max_words)]
-    chunk_duration = duration / len(chunks)
-
-    text_clips = []
-    for i, chunk in enumerate(chunks):
-        clip = (
-            TextClip(font=font_path, text=chunk, font_size=48, color="white", method='caption', size=(1100, None))
-            .with_position(("center", 720 - padding_bottom))
-            .with_start(i * chunk_duration)
-            .with_duration(chunk_duration)
-        )
-        text_clips.append(clip)
-
-    return text_clips
-
+    subprocess.run(command, check=True)
 
 
 def helper(event_data: dict):
@@ -105,55 +171,42 @@ def helper(event_data: dict):
     output_dir = event_data["output_path"]
     os.makedirs(output_dir, exist_ok=True)
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        sorted_entries = sorted(entries, key=lambda x: x['seq_id'])
-        video_clips = []
+    output_videos = []
 
-        for idx, entry in enumerate(sorted_entries):
-            if entry['status'] != 'complete_success':
-                continue
+    for entry in sorted(entries, key=lambda x: x['seq_id']):
+        if entry["status"] != "complete_success":
+            continue
 
-            full_url = f"{cdn_host}{entry['voice_url']}"
-            audio_path = os.path.join(temp_dir, f"{uuid.uuid4()}.wav")
-            waveform_path = os.path.join(temp_dir, f"{uuid.uuid4()}_wave.mp4")
+        audio_url = f"{cdn_host}{entry['voice_url']}"
+        audio_path = os.path.join(output_dir, f"{uuid.uuid4()}.wav")
+        waveform_path = os.path.join(output_dir, f"{uuid.uuid4()}_wave.mp4")
+        final_output_path = os.path.join(output_dir, f"final_{uuid.uuid4()}.mp4")
 
-            try:
-                # Download audio and generate waveform
-                download_audio(full_url, audio_path)
-                generate_waveform(audio_path, waveform_path)
+        try:
+            download_audio(audio_url, audio_path)
+            duration = get_audio_duration(audio_path)
+            generate_waveform_with_image_bg(audio_path, BACKGROUND_PATH, waveform_path, duration=duration)
 
-                # Build video scene
-                audio = AudioFileClip(audio_path)
-                duration = audio.duration
-                background = get_background(duration)
-                speaker_label = get_speaker_label(entry['Speaker'], duration)
-                # subtitle = get_subtitle(entry['text'], duration)
-                # waveform = get_waveform_clip(waveform_path, duration)
-                #
-                # scene = CompositeVideoClip([background, waveform, subtitle, speaker_label]).with_audio(audio)
-                # video_clips.append(scene)
-                subtitle_chunks = get_subtitle_chunks(entry['text'], duration)  # list of subtitle clips
-                waveform = get_waveform_clip(waveform_path, duration)
+            compose_video(
+                background_path=BACKGROUND_PATH,
+                waveform_path=waveform_path,
+                audio_path=audio_path,
+                speaker='S1',
+                subtitle_text=entry["text"],
+                duration=duration,
+                output_path=final_output_path
+            )
 
-                scene = CompositeVideoClip([background, waveform, speaker_label] + subtitle_chunks).with_audio(audio)
-                video_clips.append(scene)
+            output_videos.append(final_output_path)
 
+        except Exception as e:
+            print(f"Error processing {audio_url}: {e}")
+            continue
 
-            except Exception as e:
-                print(f"Error processing {full_url}: {e}")
-                continue
+    if not output_videos:
+        raise ValueError("No videos were successfully generated.")
 
-        if not video_clips:
-            raise ValueError("No successful clips were processed.")
+    final_merged_path = os.path.join(event_data["output_path"], f"final_merged_video{uuid.uuid4()}.mp4")
+    merge_videos(output_videos, final_merged_path)
 
-        # Concatenate all scenes
-        from moviepy import concatenate_videoclips
-        final_video = concatenate_videoclips(video_clips, method="compose")
-        final_output_path = os.path.join(output_dir, f"final_video_{uuid.uuid4()}.mp4")
-        final_video.write_videofile(final_output_path, fps=24,
-                                    codec="libx264",
-                                    audio_codec="aac",
-                                    preset="ultrafast",
-                                    threads=8)
-
-    return final_output_path
+    return final_merged_path

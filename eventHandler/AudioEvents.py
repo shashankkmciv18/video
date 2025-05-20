@@ -36,7 +36,8 @@ def download_and_merge_audio(event_data: dict):
         s3_uploader_service = S3UploaderService()
         s3_file_key = f"audio/{os.path.basename(path)}"
         print(f"Uploading {path} to S3 with key {s3_file_key}")
-        upload_url = s3_uploader_service.upload_file_to_s3(file_path=path, s3_file_key=s3_file_key)
+        upload_url = ''
+        # upload_url = s3_uploader_service.upload_file_to_s3(file_path=path, s3_file_key=s3_file_key)
         if upload_url:
             print(event_data)
             tts_service.update_job_batch(event_data["batch_id"], "complete_success", upload_url)
