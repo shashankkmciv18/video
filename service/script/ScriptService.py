@@ -21,7 +21,7 @@ class ScriptService:
                     continue
                 speaker = dialogue.get("Speaker") or dialogue.get("speaker")
                 self.repo.create_dialogue(
-                    speaker=speaker,
+                    speaker=weights[speaker]["name"] if speaker in weights else speaker,
                     tone=dialogue.get("Tone") or dialogue.get("tone"),
                     dialogue=dialogue.get("Dialogue") or dialogue.get("dialogue"),
                     pause=dialogue.get("Pause") or dialogue.get("pause") or 0,

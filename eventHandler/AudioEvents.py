@@ -18,9 +18,9 @@ tts_service = get_tts_service(get_tts_repo())
 merger_service = AudioMergerService()
 
 
-# @celery_app.task(bind=True, max_retries=3, default_retry_delay=60, name="audio_merge_task", queue="audio_queue")
-# def download_and_merge_audio(self, event_data: dict):
-def download_and_merge_audio(event_data: dict):
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=60, name="audio_merge_task", queue="audio_queue")
+def download_and_merge_audio(self, event_data: dict):
+# def download_and_merge_audio(event_data: dict):
     """
     entries: List of dictionaries with keys:
         - 'status': Status of the audio file (e.g., 'complete_success')

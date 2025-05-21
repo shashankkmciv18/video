@@ -221,7 +221,7 @@ def helper(event_data: dict):
                 background_path=BACKGROUND_PATH,
                 waveform_path=waveform_path,
                 audio_path=audio_path,
-                speaker='S1',
+                speaker=(entry.get("Speaker") or 'S1'),
                 subtitle_text=entry["text"],
                 duration=duration,
                 output_path=video_op_path
