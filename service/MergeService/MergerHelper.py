@@ -70,21 +70,54 @@ def merge_videos(video_paths, output_path):
     os.remove(list_file_path)
 
 
-def getCodecAndPix_Fmtt(ext):
-    if ext == ".mp4":
-        codec = "libx264"
-        pix_fmt = "yuva420p"
-    elif ext == ".webm":
-        codec = "libvpx"
-        pix_fmt = "yuva420p"
+def get_ffmpeg_encoding_params(output_format: str):
+    """
+    Returns FFmpeg codec and pixel format parameters based on the output format.
+    """
+    output_format = output_format.lower()
+
+    if output_format == "mp4":
+        return [
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac"
+        ]
+    elif output_format == "mkv":
+        return [
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac"  # You can also use "copy" if passthrough is fine
+        ]
+    elif output_format == "webm":
+        return [
+            "-c:v", "libvpx-vp9",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "libopus"
+        ]
+    elif output_format == "mov":
+        return [
+            "-c:v", "prores_ks",
+            "-pix_fmt", "yuva444p10le",  # preserves alpha
+            "-c:a", "aac"
+        ]
     else:
-        raise ValueError(f"Unsupported output format: {ext}. Use .mp4 or .webm.")
-    return {
-        "codec": codec,
-        "pix_fmt": pix_fmt
-    }
+        raise ValueError(f"Unsupported format: {output_format}")
+
+
+def get_output_format(output_path: str):
+    """
+    Returns the output format based on the file extension.
+    """
+    _, ext = os.path.splitext(output_path)
+    ext = ext.lower()
+    if ext in [".mp4", ".mkv", ".webm", ".mov"]:
+        return ext[1:]
+
+
 def generate_waveform(audio_path, output_path, resolution="1920x120", duration=5.0, waveform_color="white@0.7"):
-    background_color  = "pink"
+    background_color = "pink"
+    video_format = get_output_format(output_path)
+    encoding_pattern = get_ffmpeg_encoding_params(video_format)
     command = [
         "ffmpeg", "-y",
         "-i", audio_path,
@@ -94,18 +127,19 @@ def generate_waveform(audio_path, output_path, resolution="1920x120", duration=5
         "-i", f"color=color={background_color}:s={resolution}:d={duration}",
 
         "-filter_complex",
-        f"[0:a]showwaves=s={resolution}:mode=cline:colors={waveform_color}[wave]",
-        "-map", "[wave]", "-map", "0:a",
-        "-c:v", "libx264",
-        # "-auto-alt-ref", "0",
-        "-pix_fmt", "yuv420p",
-        "-c:a", "aac",
+        f"[0:a]showwaves=s={resolution}:mode=sline:colors={waveform_color}[wave]",
+        *encoding_pattern,
         "-t", str(duration),
         output_path
     ]
     subprocess.run(command, check=True)
 
-def generate_waveform_with_image_bg(audio_path, background_image, output_path, resolution="1920x720", duration=5.0, waveform_color="white@1.0"):
+
+def generate_waveform_with_image_bg(audio_path, background_image, output_path, resolution="1920x720", duration=5.0,
+                                    waveform_color="white@1.0"):
+
+    video_format = get_output_format(output_path)
+    encoding_pattern =  get_ffmpeg_encoding_params(video_format)
 
     filter_chain = [
         f"[1:v]scale={resolution},format=rgba,colorchannelmixer=aa=0.5[bg]",  # Transparent background image
@@ -126,9 +160,7 @@ def generate_waveform_with_image_bg(audio_path, background_image, output_path, r
         "-i", background_image,  # Background image
         "-filter_complex", filter_complex,
         "-map", "[out]", "-map", "0:a",
-        "-c:v", "libx264",
-        "-pix_fmt", "yuv420p",
-        "-c:a", "aac",
+        *encoding_pattern,
         "-t", str(duration),
         output_path
     ]
@@ -138,6 +170,9 @@ def generate_waveform_with_image_bg(audio_path, background_image, output_path, r
 def compose_video(background_path, waveform_path, audio_path, speaker, subtitle_text, duration, output_path):
     chunks = chunk_text(subtitle_text)
     subtitle_drawtexts = generate_drawtext_filters(chunks, duration, FONT_PATH)
+
+    video_format = get_output_format(output_path)
+    encoding_pattern = get_ffmpeg_encoding_params(video_format)
 
     # Start building the filter chain
     # filter_chain = [
@@ -171,10 +206,7 @@ def compose_video(background_path, waveform_path, audio_path, speaker, subtitle_
         "-i", audio_path,
         "-filter_complex", filter_complex,
         "-map", "[final]", "-map", "2:a",
-        "-c:v", "libx264",
-        # "-auto-alt-ref", "0",
-        "-pix_fmt", "yuv420p",  # Supports alpha in webm
-        "-c:a", "aac",  # required for webm compatibility
+        *encoding_pattern,
         "-shortest",
 
         output_path
@@ -188,7 +220,7 @@ def helper(event_data: dict):
     cdn_host = event_data["cdn_host"]
     output_dir = event_data["output_path"]
     os.makedirs(output_dir, exist_ok=True)
-
+    video_format = '.mov'
     output_videos = []
 
     for entry in sorted(entries, key=lambda x: x['seq_id']):
@@ -197,8 +229,8 @@ def helper(event_data: dict):
 
         audio_url = f"{cdn_host}{entry['voice_url']}"
         audio_path = os.path.join(output_dir, f"{uuid.uuid4()}.wav")
-        waveform_path = os.path.join(output_dir, f"{uuid.uuid4()}_wave.mp4")
-        final_output_path = os.path.join(output_dir, f"final_{uuid.uuid4()}.mp4")
+        waveform_path = os.path.join(output_dir, f"{uuid.uuid4()}_wave{video_format}")
+        final_output_path = os.path.join(output_dir, f"final_{uuid.uuid4()}{video_format}")
 
         try:
             download_audio(audio_url, audio_path)
@@ -224,7 +256,7 @@ def helper(event_data: dict):
     if not output_videos:
         raise ValueError("No videos were successfully generated.")
 
-    final_merged_path = os.path.join(event_data["output_path"], f"final_merged_video{uuid.uuid4()}.mp4")
+    final_merged_path = os.path.join(event_data["output_path"], f"final_merged_video{uuid.uuid4()}{video_format}")
     merge_videos(output_videos, final_merged_path)
 
     return final_merged_path
