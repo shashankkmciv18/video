@@ -1,4 +1,5 @@
 import os
+import tempfile
 import uuid
 import subprocess
 import requests
@@ -114,32 +115,10 @@ def get_output_format(output_path: str):
         return ext[1:]
 
 
-def generate_waveform(audio_path, output_path, resolution="1920x120", duration=5.0, waveform_color="white@0.7"):
-    background_color = "pink"
-    video_format = get_output_format(output_path)
-    encoding_pattern = get_ffmpeg_encoding_params(video_format)
-    command = [
-        "ffmpeg", "-y",
-        "-i", audio_path,
-
-        # 👇 Create a solid blue background instead of transparent
-        "-f", "lavfi", "-t", str(duration),
-        "-i", f"color=color={background_color}:s={resolution}:d={duration}",
-
-        "-filter_complex",
-        f"[0:a]showwaves=s={resolution}:mode=sline:colors={waveform_color}[wave]",
-        *encoding_pattern,
-        "-t", str(duration),
-        output_path
-    ]
-    subprocess.run(command, check=True)
-
-
 def generate_waveform_with_image_bg(audio_path, background_image, output_path, resolution="1920x720", duration=5.0,
                                     waveform_color="white@1.0"):
-
     video_format = get_output_format(output_path)
-    encoding_pattern =  get_ffmpeg_encoding_params(video_format)
+    encoding_pattern = get_ffmpeg_encoding_params(video_format)
 
     filter_chain = [
         f"[1:v]scale={resolution},format=rgba,colorchannelmixer=aa=0.5[bg]",  # Transparent background image
@@ -222,15 +201,16 @@ def helper(event_data: dict):
     os.makedirs(output_dir, exist_ok=True)
     video_format = '.mov'
     output_videos = []
+    temp_dir = tempfile.gettempdir()
 
     for entry in sorted(entries, key=lambda x: x['seq_id']):
         if entry["status"] != "complete_success":
             continue
 
         audio_url = f"{cdn_host}{entry['voice_url']}"
-        audio_path = os.path.join(output_dir, f"{uuid.uuid4()}.wav")
-        waveform_path = os.path.join(output_dir, f"{uuid.uuid4()}_wave{video_format}")
-        final_output_path = os.path.join(output_dir, f"final_{uuid.uuid4()}{video_format}")
+        audio_path = os.path.join(temp_dir, f"{uuid.uuid4()}.wav")
+        waveform_path = os.path.join(temp_dir, f"{uuid.uuid4()}_wave{video_format}")
+        video_op_path = os.path.join(temp_dir, f"final_{uuid.uuid4()}{video_format}")
 
         try:
             download_audio(audio_url, audio_path)
@@ -244,10 +224,10 @@ def helper(event_data: dict):
                 speaker='S1',
                 subtitle_text=entry["text"],
                 duration=duration,
-                output_path=final_output_path
+                output_path=video_op_path
             )
 
-            output_videos.append(final_output_path)
+            output_videos.append(video_op_path)
 
         except Exception as e:
             print(f"Error processing {audio_url}: {e}")
