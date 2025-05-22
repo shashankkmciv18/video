@@ -1,4 +1,6 @@
 import os
+import re
+import shutil
 import tempfile
 import uuid
 import subprocess
@@ -33,7 +35,7 @@ def generate_drawtext_filters(chunks, duration, font_path, start_y=400, line_spa
     chunk_duration = (duration * 0.95) / len(chunks)
     filter_lines = []
     for i, chunk in enumerate(chunks):
-        safe_chunk = chunk.replace("'", "\\'")
+        safe_chunk = filter_text(chunk)
         start = round(i * chunk_duration, 2)
         end = round((i + 1) * chunk_duration, 2)
         y = start_y
@@ -68,7 +70,10 @@ def merge_videos(video_paths, output_path):
     subprocess.run(cmd, check=True)
 
     # Optional: Clean up list file
-    os.remove(list_file_path)
+    # try:
+    #     os.remove(list_file_path)
+    # except OSError as e:
+    #     print(f"Error deleting file {list_file_path}: {e}")
 
 
 def get_ffmpeg_encoding_params(output_format: str):
@@ -122,7 +127,7 @@ def generate_waveform_with_image_bg(audio_path, background_image, output_path, r
 
     filter_chain = [
         f"[1:v]scale={resolution},format=rgba,colorchannelmixer=aa=0.5[bg]",  # Transparent background image
-        f"[0:a]showwaves=s={resolution}:mode=line:colors={waveform_color}:scale=sqrt,format=yuva420p[wave]",
+        f"[0:a]showwaves=s={resolution}:mode=cline:colors={waveform_color}:scale=cbrt,format=yuva420p[wave]",
         f"[bg][wave]overlay=format=auto[out]"
     ]
     # filter_chain = [
@@ -146,11 +151,11 @@ def generate_waveform_with_image_bg(audio_path, background_image, output_path, r
     subprocess.run(command, check=True)
 
 
-def compose_video(background_path, waveform_path, audio_path, speaker, subtitle_text, duration, output_path):
+def compose_video(background_path, waveform_path, audio_path, speaker, subtitle_text, duration, output_mov, output_mp4):
     chunks = chunk_text(subtitle_text)
     subtitle_drawtexts = generate_drawtext_filters(chunks, duration, FONT_PATH)
 
-    video_format = get_output_format(output_path)
+    video_format = get_output_format(output_mov)
     encoding_pattern = get_ffmpeg_encoding_params(video_format)
 
     # Start building the filter chain
@@ -187,11 +192,44 @@ def compose_video(background_path, waveform_path, audio_path, speaker, subtitle_
         "-map", "[final]", "-map", "2:a",
         *encoding_pattern,
         "-shortest",
+        "-threads", "0",
 
-        output_path
+        output_mov
     ]
 
     subprocess.run(command, check=True)
+
+    command2 = [
+        "ffmpeg", "-y",
+        "-i", output_mov,
+        "-c:v", "libx264",
+        "-pix_fmt", "yuv420p",
+        "-crf", "28",  # or 28 for more compression
+        "-c:a", "aac",
+        "-b:a", "128k",
+        "-movflags", "+faststart",
+        output_mp4
+    ]
+    subprocess.run(command2, check=True)
+    try:
+        os.remove(output_mov)
+        os.remove(audio_path)
+        print(f"Deleted intermediate file: {output_mov}")
+    except OSError as e:
+        print(f"Error deleting file {output_mov}: {e}")
+
+
+def filter_text(text):
+    text = text.replace("\\", "\\\\")  # Escape backslash first!
+    text = text.replace("'", " ")  # Apostrophe (if using single quotes in ffmpeg)
+    text = text.replace(":", " ")
+    text = text.replace(",", " ")
+    text = text.replace(";", " ")
+    text = text.replace("[", " ")
+    text = text.replace("]", " ")
+    text = text.replace("$", " ")
+    text = text.replace("%", " ")
+    return text
 
 
 def helper(event_data: dict):
@@ -199,9 +237,10 @@ def helper(event_data: dict):
     cdn_host = event_data["cdn_host"]
     output_dir = event_data["output_path"]
     os.makedirs(output_dir, exist_ok=True)
-    video_format = '.mov'
+    wave_form_op_format = '.mov'
+    video_format = '.mp4'
     output_videos = []
-    temp_dir = tempfile.gettempdir()
+    temp_dir = tempfile.mkdtemp(prefix="merge_", dir="/tmp")  # Safe and writable
 
     for entry in sorted(entries, key=lambda x: x['seq_id']):
         if entry["status"] != "complete_success":
@@ -209,25 +248,32 @@ def helper(event_data: dict):
 
         audio_url = f"{cdn_host}{entry['voice_url']}"
         audio_path = os.path.join(temp_dir, f"{uuid.uuid4()}.wav")
-        waveform_path = os.path.join(temp_dir, f"{uuid.uuid4()}_wave{video_format}")
-        video_op_path = os.path.join(temp_dir, f"final_{uuid.uuid4()}{video_format}")
+        waveform_path = os.path.join(temp_dir, f"{uuid.uuid4()}_wave{wave_form_op_format}")
+        video_op_path = os.path.join(temp_dir, f"final_{uuid.uuid4()}{wave_form_op_format}")
+        video_mov_path = os.path.join(temp_dir, f"final_{uuid.uuid4()}{wave_form_op_format}")
+        video_mp4_path = os.path.join(temp_dir, f"final_{uuid.uuid4()}{video_format}")
 
         try:
             download_audio(audio_url, audio_path)
             duration = get_audio_duration(audio_path)
             generate_waveform_with_image_bg(audio_path, TRANSPARENT_BACKGROUND_PATH, waveform_path, duration=duration)
 
+            text = entry.get("text")
+            # text = filter_text(text)
+            speaker = filter_text(entry.get("Speaker") or 'S1')
+
             compose_video(
                 background_path=BACKGROUND_PATH,
                 waveform_path=waveform_path,
                 audio_path=audio_path,
-                speaker=(entry.get("Speaker") or 'S1'),
-                subtitle_text=entry["text"],
+                speaker=speaker,
+                subtitle_text=text,
                 duration=duration,
-                output_path=video_op_path
+                output_mov=video_mov_path,
+                output_mp4=video_mp4_path
             )
 
-            output_videos.append(video_op_path)
+            output_videos.append(video_mp4_path)
 
         except Exception as e:
             print(f"Error processing {audio_url}: {e}")
@@ -235,8 +281,10 @@ def helper(event_data: dict):
 
     if not output_videos:
         raise ValueError("No videos were successfully generated.")
+    path = os.path.join(event_data["output_path"], f"final_merged_video{uuid.uuid4()}{video_format}")
+    print('path is ' , path)
 
-    final_merged_path = os.path.join(event_data["output_path"], f"final_merged_video{uuid.uuid4()}{video_format}")
+    final_merged_path = path
     merge_videos(output_videos, final_merged_path)
 
     return final_merged_path
