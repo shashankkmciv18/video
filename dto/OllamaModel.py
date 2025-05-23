@@ -1,10 +1,10 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 
 class Message(BaseModel):
     role: str  # system | user | assistant
-    content: str
+    content : Any
 
 
 class SpeakerWeight(BaseModel):

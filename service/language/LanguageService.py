@@ -1,3 +1,4 @@
+import json
 import subprocess
 import uuid
 from typing import Dict
@@ -39,16 +40,18 @@ class LanguageService:
 
     def chat(self, messages: list[Message], model: str, weights: Dict[str, SpeakerWeight], client_id: str) -> dict:
         prompt_id = str(uuid.uuid4())
+        system_prompt = json.dumps(messages[0].content)
+        user_prompt = json.dumps(messages[1].content)
         self.repo.add_prompt(
             prompt_id=prompt_id,
-            system_prompt=messages[0].content,
-            user_prompt=messages[1].content
+            system_prompt=system_prompt,
+            user_prompt=user_prompt
         )
 
         try:
             payload = {
-                "system_prompt": messages[0].content,
-                "user_prompt": messages[1].content,
+                "system_prompt": system_prompt,
+                "user_prompt": user_prompt,
                 "model": model,
                 "prompt_id": prompt_id,
                 "weights": weights,
@@ -57,7 +60,6 @@ class LanguageService:
             try:
 
                 llmChatEvent.apply_async(args=[payload], countdown=20)
-                # llmChatEvent(dict(payload))
             except Exception as e:
                 print(f"Exception: {e}")
         except Exception as e:
