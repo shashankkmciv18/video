@@ -32,8 +32,8 @@ class AudioMergerService:
             "batch_id": batch_id
         }
         from eventHandler.AudioEvents import download_and_merge_audio
-        # download_and_merge_audio.apply_async(args=[payload], countdown=5)
-        download_and_merge_audio.run(dict(payload))
+        download_and_merge_audio.apply_async(args=[payload], countdown=5)
+        # download_and_merge_audio.run(dict(payload))
         # download_and_merge_audio(dict(payload))
 
     def save_audio(self, merged_audio, output_path: str):
