@@ -70,3 +70,4 @@ class LanguageService:
             "object": "chat.completion",
             "status": "pending",
         }
+

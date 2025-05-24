@@ -6,7 +6,7 @@ class ScriptService:
         self.repo = repo
 
     def save_script(self, data, weights, prompt_id):
-        title = data.get('podcast_title') or data.get('topic') or "default"
+        title = data.get('podcast_title') or data.get('Podcast_Title') or data.get("topic") or data.get("Topic") or "default"
         script_id = self.repo.create_script(title)
 
         seq_counter = 1
@@ -31,7 +31,6 @@ class ScriptService:
                     voice_id=weights[speaker]["weight"]
                 )
                 seq_counter += 1
-
         self.repo.commit()
         return script_id
 

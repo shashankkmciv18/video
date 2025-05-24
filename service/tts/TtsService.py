@@ -87,8 +87,8 @@ class TtsService:
     def get_cdn_url(self):
         return self.processor.get_cdn_url()
 
-    def create_job_batch(self):
-        batch_id = str(uuid.uuid4())
+    def create_job_batch(self, batch_id=None):
+        batch_id = str(uuid.uuid4()) if not batch_id else batch_id
         self.repo.create_job_batch(batch_id)
         return batch_id
 
