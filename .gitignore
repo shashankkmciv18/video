@@ -70,7 +70,7 @@ docs/_build/
 .vscode/
 
 # Environments
-.env
+#.env
 .venv/
 env/
 venv/
@@ -100,5 +100,5 @@ celerybeat-schedule
 
 __pycache__/main.cpython-313.pyc
 .vevn/
-resources/audio
-secrets
+#resources/audio
+#secrets
